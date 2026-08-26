@@ -92,8 +92,8 @@ export class SolarSystemScene {
     this.controls.enablePan = true;
     this.controls.enableRotate = true;
     this.controls.enableZoom = true;
-    this.controls.minDistance = 50;
-    this.controls.maxDistance = 15000;
+    this.controls.minDistance = 5;
+    this.controls.maxDistance = 25000;
     
     // 监听鼠标/触摸事件来区分操作类型
     let isZooming = false;
@@ -129,6 +129,7 @@ export class SolarSystemScene {
     
     // 银河全景背景（在 LoadingManager 中加载，确保所有贴图就绪后再关闭加载页）
     this.scene.background = this.createSpaceBackground(this.loadingManager);
+    this._spaceBackground = this.scene.background;
     
     this.planetMeshes = createPlanets(this.solarSystem, this.loadingManager);
     
@@ -324,20 +325,23 @@ export class SolarSystemScene {
     const worldPosition = new THREE.Vector3();
     planet.mesh.getWorldPosition(worldPosition);
     
-    // 计算特写距离 - 根据星球大小调整
+    // 智能特写距离：按星球半径比例，确保视野中星球大小合适
     let closeUpDistance;
-    if (planet.name === '太阳') {
-      closeUpDistance = 120;
-    } else if (planet.isMoon) {
-      closeUpDistance = planet.radius * 4;
+    if (planet.isMoon) {
+      // 卫星：拉近到半径的5倍
+      closeUpDistance = Math.max(planet.radius * 5, 15);
     } else if (planet.isAsteroid) {
-      closeUpDistance = planet.radius * 5;
+      // 小行星：拉近到半径的8倍，但至少10
+      closeUpDistance = Math.max(planet.radius * 8, 10);
+    } else if (planet.name === '太阳') {
+      // 太阳：半径的1.5倍（太大了不能太近）
+      closeUpDistance = planet.radius * 1.5;
     } else if (planet.name === '土星') {
-      closeUpDistance = planet.radius * 4;
-    } else if (planet.name === '木星') {
-      closeUpDistance = planet.radius * 2.5;
-    } else {
+      // 土星：考虑环，半径的3倍
       closeUpDistance = planet.radius * 3;
+    } else {
+      // 其他行星：半径的2.5倍
+      closeUpDistance = planet.radius * 2.5;
     }
     
     // 设置相机目标位置（星球前方）
@@ -815,9 +819,14 @@ export class SolarSystemScene {
     });
   }
 
-  setShowStars(show) {    this.showStars = show;
+  setShowStars(show) {
+    this.showStars = show;
     if (this.starField) {
       this.starField.visible = show;
+    }
+    // 银河背景贴图跟随星空开关
+    if (this.scene) {
+      this.scene.background = show ? this._spaceBackground : null;
     }
   }
 
