@@ -48,8 +48,8 @@ export function createAsteroidBelt(innerRadius = 1000, outerRadius = 1400, count
       Math.random() * Math.PI,
       Math.random() * Math.PI
     );
-    // 尺寸按平方分布：绝大多数很小，少数略大，更接近真实小行星带
-    const s = 0.8 + Math.pow(Math.random(), 2) * 4.0;
+    // 尺寸按平方分布：绝大多数极小，少数略大（真实小行星大多<100km，即<0.08）
+    const s = 0.02 + Math.pow(Math.random(), 3) * 0.15;
     dummy.scale.set(s, s * (0.6 + Math.random() * 0.8), s);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
@@ -221,8 +221,8 @@ export function createKuiperBelt(innerRadius = 6500, outerRadius = 7500, count =
       Math.random() * Math.PI,
       Math.random() * Math.PI
     );
-    // 柯伊伯带天体大小分布：多数小，少数较大（冥王星级别）
-    const s = 0.6 + Math.pow(Math.random(), 2.5) * 3.5;
+    // 柯伊伯带天体：多数极小，少数略大（冥王星半径1.9，大部分<0.1）
+    const s = 0.02 + Math.pow(Math.random(), 3) * 0.18;
     dummy.scale.set(s, s * (0.5 + Math.random() * 1.0), s);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
