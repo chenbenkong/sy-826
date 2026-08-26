@@ -278,27 +278,24 @@ export const LensFlareShader = {
       vec3 glowColor = vec3(1.0, 0.9, 0.7) * centerGlow * sunVisible;
 
       // 六边形光斑（ghost artifacts）- 沿太阳到屏幕中心的轴线分布
-      vec2 flareAxis = normalize(vec2(0.5, 0.5) - sunScreenPos);
-      float seed = fract(time * 0.3);
+      vec2 flareAxis = normalize(vec2(0.5, 0.5) - sunScreenPos + 0.0001);
 
       vec3 flareColor = vec3(0.0);
-      float offsets[5] = float[5](0.4, 0.7, 1.1, 1.5, 2.0);
-      float sizes[5] = float[5](0.04, 0.03, 0.025, 0.02, 0.015);
-      vec3 tints[5] = vec3[5](
-        vec3(1.0, 0.7, 0.5),
-        vec3(0.6, 0.8, 1.0),
-        vec3(1.0, 0.9, 0.6),
-        vec3(0.5, 0.7, 1.0),
-        vec3(0.8, 1.0, 0.7)
-      );
-
       for (int i = 0; i < 5; i++) {
-        vec2 ghostPos = sunScreenPos + flareAxis * offsets[i];
-        float pulse = 0.7 + 0.3 * sin(time * 0.5 + float(i) * 1.3);
-        float hex = hexShape(vUv, sizes[i] * pulse, 0.008);
+        float fi = float(i);
+        float offset = 0.4 + fi * 0.35;
+        float size = 0.04 - fi * 0.005;
+        float pulse = 0.7 + 0.3 * sin(time * 0.5 + fi * 1.3);
+        float hex = hexShape(vUv, size * pulse, 0.008);
+        vec2 ghostPos = sunScreenPos + flareAxis * offset;
         float d = length(vUv - ghostPos);
         float falloff = exp(-d * 12.0);
-        flareColor += tints[i] * hex * falloff * 0.25;
+        vec3 tint = vec3(
+          0.6 + 0.4 * sin(fi * 1.2),
+          0.6 + 0.3 * cos(fi * 0.9),
+          0.7 + 0.3 * sin(fi * 0.7 + 1.0)
+        );
+        flareColor += tint * hex * falloff * 0.25;
       }
 
       vec3 result = streakColor + glowColor + flareColor;
