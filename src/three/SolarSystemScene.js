@@ -368,8 +368,16 @@ export class SolarSystemScene {
       this.updateSun();
     }
     
-    if (this.starField && this.starField.userData.material) {
-      this.starField.userData.material.uniforms.time.value = time;
+    if (this.starField && this.starField.children) {
+      // 三层星场：各自旋转速度不同，产生视差
+      this.starField.children.forEach(layer => {
+        if (layer.userData.material) {
+          layer.userData.material.uniforms.time.value = time;
+        }
+        if (layer.userData.rotSpeed) {
+          layer.rotation.y += layer.userData.rotSpeed * this.timeSpeed;
+        }
+      });
     }
     
     if (this.currentTargetPlanet) {
