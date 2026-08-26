@@ -66,15 +66,15 @@ export function createSunSurfaceShader(mapTexture) {
          float n = fbm(vUv * 10.0 + flow * 2.0 + time * 0.06);
          float granule = pow(n, 2.0);
 
-         // 米粒间较暗区域 + 颗粒高光
-          vec3 darkCol = base * 0.6;
-          vec3 brightCol = base * 1.2 + vec3(0.16, 0.08, 0.0) * granule;
-         vec3 col = mix(darkCol, brightCol, smoothstep(0.3, 0.75, n));
+          // 米粒间较暗区域 + 颗粒高光
+           vec3 darkCol = base * 0.75;
+           vec3 brightCol = base * 1.2 + vec3(0.16, 0.08, 0.0) * granule;
+          vec3 col = mix(darkCol, brightCol, smoothstep(0.3, 0.75, n));
 
-         // 低频黑子：成片略暗的活动区，增加真实细节
-         float spotN = fbm(vUv * 4.0 + vec2(11.0, 5.0));
-         float spot = smoothstep(0.58, 0.7, spotN);
-         col *= mix(1.0, 0.55, spot);
+          // 低频黑子：成片略暗的活动区，缓慢漂移（模拟太阳黑子随表面流动）
+          float spotN = fbm(vUv * 4.0 + vec2(11.0, 5.0) + time * 0.008);
+          float spot = smoothstep(0.58, 0.7, spotN);
+          col *= mix(1.0, 0.7, spot);
 
          // 临边昏暗：球面边缘自然变暗（而非亮环），增强立体感
          float ndv = clamp(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)), 0.0, 1.0);
