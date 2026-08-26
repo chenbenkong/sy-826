@@ -836,18 +836,9 @@ export class SolarSystemScene {
 
   setGlobalScale(scale) {
     this.globalScale = scale;
-    // 直接缩放太阳系 Group（所有天体统一缩放）
     if (this.solarSystem) {
-      this.solarSystem.scale.setScalar(scale);
+      this.solarSystem.scale.set(scale, scale, scale);
     }
-  }
-
-  // 返回真实缩放比：当前相机距离 / 初始相机距离
-  getZoomRatio() {
-    if (!this.camera) return 1;
-    const initialDist = new THREE.Vector3(0, 600, 1800).length();
-    const currentDist = this.camera.position.length();
-    return currentDist / initialDist;
   }
 
   resetView() {
