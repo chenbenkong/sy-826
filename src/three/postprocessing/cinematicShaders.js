@@ -217,3 +217,94 @@ export const VignetteGrainShader = {
     }
   `
 };
+
+// ═══════════════════════════════════════════════════════════════
+// 5. LENS FLARE — 镜头光晕（六边形光斑 + 水平光束）
+// ═══════════════════════════════════════════════════════════════
+
+export const LensFlareShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    sunScreenPos: { value: new THREE.Vector2(0.5, 0.5) },
+    sunVisible: { value: 1.0 },
+    time: { value: 0.0 }
+  },
+  vertexShader: /* glsl */`
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse;
+    uniform vec2 sunScreenPos;
+    uniform float sunVisible;
+    uniform float time;
+    varying vec2 vUv;
+
+    // 六边形距离场
+    float hexDist(vec2 p) {
+      p = abs(p);
+      return max(dot(p, vec2(0.866025, 0.5)), p.y);
+    }
+
+    // 六边形光斑
+    float hexShape(vec2 uv, float size, float softness) {
+      vec2 p = uv - 0.5;
+      float d = hexDist(p * vec2(1.0, 1.732)) - size;
+      return 1.0 - smoothstep(0.0, softness, d);
+    }
+
+    void main() {
+      vec4 color = texture2D(tDiffuse, vUv);
+
+      if (sunVisible < 0.01) {
+        gl_FragColor = color;
+        return;
+      }
+
+      vec2 toSun = sunScreenPos - vUv;
+      float distToSun = length(toSun);
+      vec2 dirToSun = normalize(toSun);
+
+      // 水平光束（anamorphic streak）
+      float streak = exp(-abs(vUv.y - sunScreenPos.y) * 25.0)
+                   * exp(-abs(vUv.x - sunScreenPos.x) * 1.8) * 0.3;
+      vec3 streakColor = vec3(0.6, 0.7, 1.0) * streak * sunVisible;
+
+      // 中心光晕（柔光球）
+      float centerGlow = exp(-distToSun * 8.0) * 0.35;
+      vec3 glowColor = vec3(1.0, 0.9, 0.7) * centerGlow * sunVisible;
+
+      // 六边形光斑（ghost artifacts）- 沿太阳到屏幕中心的轴线分布
+      vec2 flareAxis = normalize(vec2(0.5, 0.5) - sunScreenPos);
+      float seed = fract(time * 0.3);
+
+      vec3 flareColor = vec3(0.0);
+      float offsets[5] = float[5](0.4, 0.7, 1.1, 1.5, 2.0);
+      float sizes[5] = float[5](0.04, 0.03, 0.025, 0.02, 0.015);
+      vec3 tints[5] = vec3[5](
+        vec3(1.0, 0.7, 0.5),
+        vec3(0.6, 0.8, 1.0),
+        vec3(1.0, 0.9, 0.6),
+        vec3(0.5, 0.7, 1.0),
+        vec3(0.8, 1.0, 0.7)
+      );
+
+      for (int i = 0; i < 5; i++) {
+        vec2 ghostPos = sunScreenPos + flareAxis * offsets[i];
+        float pulse = 0.7 + 0.3 * sin(time * 0.5 + float(i) * 1.3);
+        float hex = hexShape(vUv, sizes[i] * pulse, 0.008);
+        float d = length(vUv - ghostPos);
+        float falloff = exp(-d * 12.0);
+        flareColor += tints[i] * hex * falloff * 0.25;
+      }
+
+      vec3 result = streakColor + glowColor + flareColor;
+      color.rgb += result * sunVisible;
+
+      gl_FragColor = color;
+    }
+  `
+};

@@ -146,6 +146,7 @@ export class SolarSystemScene {
       this.chromaticPass = pp.chromaticPass;
       this.colorGradingPass = pp.colorGradingPass;
       this.vignetteGrainPass = pp.vignetteGrainPass;
+      this.lensFlarePass = pp.lensFlarePass;
     } catch (e) {
       console.error('[solar] 后期管线初始化失败，退回普通渲染：', e);
       this.composer = null;
@@ -153,7 +154,8 @@ export class SolarSystemScene {
       this.godRaysPass = null;
       this.chromaticPass = null;
       this.colorGradingPass = null;
-      this.vignetteGrainPass = null;
+    this.vignetteGrainPass = null;
+    this.lensFlarePass = null;
     }
 
     this.animate();
@@ -557,6 +559,19 @@ export class SolarSystemScene {
     // Vignette + Grain: 更新时间（驱动动态颗粒）
     if (this.vignetteGrainPass) {
       this.vignetteGrainPass.uniforms.time.value = time;
+    }
+
+    // Lens Flare: 投影太阳到屏幕空间，传递位置和可见性
+    if (this.lensFlarePass && this.sun) {
+      const sunNDC = this.sun.position.clone().project(this.camera);
+      const behind = sunNDC.z > 1;
+      const sunScreen = new THREE.Vector2(
+        (sunNDC.x + 1) * 0.5,
+        (sunNDC.y + 1) * 0.5
+      );
+      this.lensFlarePass.uniforms.sunScreenPos.value.copy(sunScreen);
+      this.lensFlarePass.uniforms.sunVisible.value = behind ? 0.0 : 1.0;
+      this.lensFlarePass.uniforms.time.value = time * 0.001;
     }
   }
 
