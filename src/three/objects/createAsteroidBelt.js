@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // 火星与木星之间的小行星带：用 InstancedMesh 一次性绘制大量细小岩石，性能友好
-export function createAsteroidBelt(innerRadius = 650, outerRadius = 900, count = 8000) {
+export function createAsteroidBelt(innerRadius = 1000, outerRadius = 1400, count = 8000) {
   const group = new THREE.Group();
 
   const { albedo, normal } = buildRockTextures(512);
@@ -49,7 +49,7 @@ export function createAsteroidBelt(innerRadius = 650, outerRadius = 900, count =
       Math.random() * Math.PI
     );
     // 尺寸按平方分布：绝大多数很小，少数略大，更接近真实小行星带
-    const s = 0.4 + Math.pow(Math.random(), 2) * 2.5;
+    const s = 0.8 + Math.pow(Math.random(), 2) * 4.0;
     dummy.scale.set(s, s * (0.6 + Math.random() * 0.8), s);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
@@ -191,7 +191,7 @@ function makeValueNoise(size) {
 }
 
 // 柯伊伯带：海王星轨道外的冰冻天体带，用 InstancedMesh 3D岩石（非平面贴图）
-export function createKuiperBelt(innerRadius = 3200, outerRadius = 3700, count = 3000) {
+export function createKuiperBelt(innerRadius = 6500, outerRadius = 7500, count = 3000) {
   const group = new THREE.Group();
 
   const { albedo, normal } = buildKuiperTextures(512);
@@ -222,7 +222,7 @@ export function createKuiperBelt(innerRadius = 3200, outerRadius = 3700, count =
       Math.random() * Math.PI
     );
     // 柯伊伯带天体大小分布：多数小，少数较大（冥王星级别）
-    const s = 0.3 + Math.pow(Math.random(), 2.5) * 2.0;
+    const s = 0.6 + Math.pow(Math.random(), 2.5) * 3.5;
     dummy.scale.set(s, s * (0.5 + Math.random() * 1.0), s);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);

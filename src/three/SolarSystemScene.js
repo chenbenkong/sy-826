@@ -67,9 +67,9 @@ export class SolarSystemScene {
       60,
       window.innerWidth / window.innerHeight,
       0.1,
-      12000
+      20000
     );
-    this.camera.position.set(0, 400, 1200);
+    this.camera.position.set(0, 600, 1800);
     
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -92,7 +92,7 @@ export class SolarSystemScene {
     this.controls.enableRotate = true;
     this.controls.enableZoom = true;
     this.controls.minDistance = 50;
-    this.controls.maxDistance = 8000;
+    this.controls.maxDistance = 15000;
     
     // 监听鼠标/触摸事件来区分操作类型
     let isZooming = false;
@@ -133,10 +133,10 @@ export class SolarSystemScene {
     this.planetMeshes = createPlanets(this.solarSystem, this.loadingManager);
     
     // 火星—木星之间的小行星带
-    this.asteroidBelt = createAsteroidBelt(650, 900);
+    this.asteroidBelt = createAsteroidBelt(1000, 1400);
     this.solarSystem.add(this.asteroidBelt);
 
-    this.kuiperBelt = createKuiperBelt(3200, 3700);
+    this.kuiperBelt = createKuiperBelt(6500, 7500);
     this.solarSystem.add(this.kuiperBelt);
 
     // 知名小行星：谷神星、灶神星、智神星、婚神星
@@ -212,10 +212,10 @@ export class SolarSystemScene {
     this.sunLight = new THREE.PointLight(0xfff2e0, 3.0, 0, 0);
     this.sunLight.position.set(0, 0, 0);
     this.sunLight.castShadow = true;
-    this.sunLight.shadow.mapSize.width = 2048;
-    this.sunLight.shadow.mapSize.height = 2048;
+    this.sunLight.shadow.mapSize.width = 4096;
+    this.sunLight.shadow.mapSize.height = 4096;
     this.sunLight.shadow.camera.near = 1;
-    this.sunLight.shadow.camera.far = 8000;
+    this.sunLight.shadow.camera.far = 15000;
     this.sunLight.shadow.bias = -0.0001;
     this.scene.add(this.sunLight);
 
@@ -890,10 +890,10 @@ export class SolarSystemScene {
   // 知名小行星：程序化不规则形状 + 自转
   createNamedAsteroids() {
     const data = [
-      { name: '谷神星', distance: 770, radius: 5, color: 0x8a8578, orbitSpeed: 0.07, fact: '小行星带最大天体，矮行星，直径940公里，表面有盐类沉积。' },
-      { name: '灶神星', distance: 700, radius: 3.5, color: 0x9a8a70, orbitSpeed: 0.09, fact: '小行星带第二大战体，直径525公里，南极有巨大撞击坑。' },
-      { name: '智神星', distance: 830, radius: 3, color: 0x8a8070, orbitSpeed: 0.06, fact: '小行星带第三大战体，直径512公里，轨道倾角高达34°。' },
-      { name: '婚神星', distance: 870, radius: 2.5, color: 0x7a7060, orbitSpeed: 0.055, fact: '小行星带第四大战体，直径250公里，以罗马婚姻女神命名。' }
+      { name: '谷神星', distance: 1150, radius: 5, color: 0x8a8578, orbitSpeed: 0.07, fact: '小行星带最大天体，矮行星，直径940公里，表面有盐类沉积。' },
+      { name: '灶神星', distance: 1050, radius: 3.5, color: 0x9a8a70, orbitSpeed: 0.09, fact: '小行星带第二大战体，直径525公里，南极有巨大撞击坑。' },
+      { name: '智神星', distance: 1250, radius: 3, color: 0x8a8070, orbitSpeed: 0.06, fact: '小行星带第三大战体，直径512公里，轨道倾角高达34°。' },
+      { name: '婚神星', distance: 1350, radius: 2.5, color: 0x7a7060, orbitSpeed: 0.055, fact: '小行星带第四大战体，直径250公里，以罗马婚姻女神命名。' }
     ];
 
     const asteroids = [];
