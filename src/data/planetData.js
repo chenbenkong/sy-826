@@ -2,7 +2,7 @@ export const planetData = [
   {
     name: '水星',
     radius: 3,
-    distance: 90,
+    distance: 180,
     color: 0xaaaaaa,
     colorHex: '#b8b0a8',
     type: '类地行星',
@@ -21,7 +21,7 @@ export const planetData = [
   {
     name: '金星',
     radius: 9,
-    distance: 140,
+    distance: 280,
     color: 0xe39e54,
     colorHex: '#e6a85c',
     type: '类地行星',
@@ -41,7 +41,7 @@ export const planetData = [
   {
     name: '地球',
     radius: 10,
-    distance: 200,
+    distance: 400,
     color: 0x2233ff,
     colorHex: '#3a86ff',
     type: '类地行星',
@@ -62,7 +62,7 @@ export const planetData = [
   {
     name: '火星',
     radius: 5,
-    distance: 300,
+    distance: 600,
     color: 0xff3300,
     colorHex: '#e2562f',
     type: '类地行星',
@@ -82,7 +82,7 @@ export const planetData = [
   {
     name: '木星',
     radius: 70,
-    distance: 500,
+    distance: 1000,
     color: 0xffaa88,
     colorHex: '#e0a878',
     type: '气态巨行星',
@@ -101,16 +101,16 @@ export const planetData = [
     ringOpacity: 0.1,
     fact: '太阳系最大行星，质量超其他行星总和的两倍。大红斑是已持续数百年的巨型风暴。',
     moonsList: [
-      { name: '木卫一（伊奥）', radiusRatio: 0.05, distanceRatio: 1.6, orbitSpeed: 4.5, rotationSpeed: 0.002 },
-      { name: '木卫二（欧罗巴）', radiusRatio: 0.045, distanceRatio: 2.0, orbitSpeed: 3.2, rotationSpeed: 0.0015 },
-      { name: '木卫三（盖尼米德）', radiusRatio: 0.065, distanceRatio: 2.6, orbitSpeed: 2.1, rotationSpeed: 0.001 },
-      { name: '木卫四（卡里斯托）', radiusRatio: 0.06, distanceRatio: 3.3, orbitSpeed: 1.5, rotationSpeed: 0.0008 }
+      { name: '木卫一（伊奥）', radiusRatio: 0.08, distanceRatio: 1.5, orbitSpeed: 4.5, rotationSpeed: 0.002 },
+      { name: '木卫二（欧罗巴）', radiusRatio: 0.07, distanceRatio: 1.9, orbitSpeed: 3.2, rotationSpeed: 0.0015 },
+      { name: '木卫三（盖尼米德）', radiusRatio: 0.10, distanceRatio: 2.4, orbitSpeed: 2.1, rotationSpeed: 0.001 },
+      { name: '木卫四（卡里斯托）', radiusRatio: 0.09, distanceRatio: 3.0, orbitSpeed: 1.5, rotationSpeed: 0.0008 }
     ]
   },
   {
     name: '土星',
     radius: 55,
-    distance: 750,
+    distance: 1500,
     color: 0xffd700,
     colorHex: '#e8c969',
     type: '气态巨行星',
@@ -130,14 +130,14 @@ export const planetData = [
     ringColors: [0xcccccc, 0xdddddd, 0xeeeeee, 0xffffff],
     fact: '以壮观的行星环闻名，环主要由冰粒与岩石碎块组成，宽度可达数十万公里却极薄。',
     moonsList: [
-      { name: '土卫六（泰坦）', radiusRatio: 0.06, distanceRatio: 2.2, orbitSpeed: 1.8, rotationSpeed: 0.001 },
-      { name: '土卫二（恩克拉多斯）', radiusRatio: 0.03, distanceRatio: 1.6, orbitSpeed: 3.5, rotationSpeed: 0.003 }
+      { name: '土卫六（泰坦）', radiusRatio: 0.09, distanceRatio: 2.0, orbitSpeed: 1.8, rotationSpeed: 0.001 },
+      { name: '土卫二（恩克拉多斯）', radiusRatio: 0.05, distanceRatio: 1.5, orbitSpeed: 3.5, rotationSpeed: 0.003 }
     ]
   },
   {
     name: '天王星',
     radius: 30,
-    distance: 1050,
+    distance: 2200,
     color: 0x99ccff,
     colorHex: '#9fd8ff',
     type: '冰巨星',
@@ -158,7 +158,7 @@ export const planetData = [
   {
     name: '海王星',
     radius: 28,
-    distance: 1350,
+    distance: 3000,
     color: 0x3366ff,
     colorHex: '#3f6bff',
     type: '冰巨星',
@@ -178,7 +178,7 @@ export const planetData = [
   {
     name: '冥王星',
     radius: 2,
-    distance: 1600,
+    distance: 3800,
     color: 0xaa7766,
     colorHex: '#b07d68',
     type: '矮行星',

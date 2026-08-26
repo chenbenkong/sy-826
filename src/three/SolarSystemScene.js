@@ -4,7 +4,7 @@ import { createSun } from './sun/createSun.js';
 import { createPlanets } from './planets/createPlanets.js';
 import { createStarfield } from './utils/createStarfield.js';
 import { createComposer } from './postprocessing/createComposer.js';
-import { createAsteroidBelt } from './objects/createAsteroidBelt.js';
+import { createAsteroidBelt, createKuiperBelt } from './objects/createAsteroidBelt.js';
 
 export class SolarSystemScene {
   constructor(container) {
@@ -52,6 +52,7 @@ export class SolarSystemScene {
     this.lensFlareEnabled = true;
     this.lensFlareLevel = 1;
     this.asteroidBelt = null;
+    this.kuiperBelt = null;
     this.loadingManager = null;
     this.onLoaded = null;
     this.suspended = false;
@@ -64,9 +65,9 @@ export class SolarSystemScene {
       60,
       window.innerWidth / window.innerHeight,
       0.1,
-      20000
+      12000
     );
-    this.camera.position.set(0, 300, 800);
+    this.camera.position.set(0, 400, 1200);
     
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -89,7 +90,7 @@ export class SolarSystemScene {
     this.controls.enableRotate = true;
     this.controls.enableZoom = true;
     this.controls.minDistance = 50;
-    this.controls.maxDistance = 3000;
+    this.controls.maxDistance = 8000;
     
     // 监听鼠标/触摸事件来区分操作类型
     let isZooming = false;
@@ -130,8 +131,11 @@ export class SolarSystemScene {
     this.planetMeshes = createPlanets(this.solarSystem, this.loadingManager);
     
     // 火星—木星之间的小行星带
-    this.asteroidBelt = createAsteroidBelt();
+    this.asteroidBelt = createAsteroidBelt(650, 900);
     this.solarSystem.add(this.asteroidBelt);
+
+    this.kuiperBelt = createKuiperBelt(3200, 3700);
+    this.solarSystem.add(this.kuiperBelt);
     
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
@@ -206,7 +210,7 @@ export class SolarSystemScene {
     this.sunLight.shadow.mapSize.width = 2048;
     this.sunLight.shadow.mapSize.height = 2048;
     this.sunLight.shadow.camera.near = 1;
-    this.sunLight.shadow.camera.far = 2000;
+    this.sunLight.shadow.camera.far = 8000;
     this.sunLight.shadow.bias = -0.0001;
     this.scene.add(this.sunLight);
 
@@ -478,6 +482,10 @@ export class SolarSystemScene {
     if (this.asteroidBelt) {
       this.asteroidBelt.rotation.y += 0.0003 * this.timeSpeed;
     }
+    // 柯伊伯带更慢公转
+    if (this.kuiperBelt) {
+      this.kuiperBelt.rotation.y += 0.0001 * this.timeSpeed;
+    }
   }
 
   updateSun() {
@@ -648,7 +656,7 @@ export class SolarSystemScene {
 
     // 检查太阳
     const sunDistance = cameraPos.distanceTo(this.sun.position);
-    const sunMinDistance = 55; // 太阳半径50 + 缓冲5
+      const sunMinDistance = 125; // 太阳半径120 + 缓冲5
     if (sunDistance < sunMinDistance) {
       const direction = this.safeDir(cameraPos, this.sun.position);
       this.camera.position.copy(this.sun.position.clone().add(direction.multiplyScalar(sunMinDistance)));
