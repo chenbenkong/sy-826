@@ -442,8 +442,13 @@ export class SolarSystemScene {
         if (planet.material && planet.material.uniforms && planet.material.uniforms.sunDirection) {
           const earthWorld = new THREE.Vector3();
           planet.mesh.getWorldPosition(earthWorld);
-          // 太阳位于世界原点
           planet.material.uniforms.sunDirection.value
+            .copy(earthWorld).multiplyScalar(-1).normalize();
+        }
+        if (planet.atmosphere && planet.atmosphere.userData.material) {
+          const earthWorld = new THREE.Vector3();
+          planet.mesh.getWorldPosition(earthWorld);
+          planet.atmosphere.userData.material.uniforms.sunDirection.value
             .copy(earthWorld).multiplyScalar(-1).normalize();
         }
       }
