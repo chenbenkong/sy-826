@@ -34,6 +34,7 @@ export class SolarSystemScene {
     this.onPlanetClick = null;
     this.onSunClick = null;
     this.onMoonClick = null;
+    this.onAsteroidClick = null;
     this.onCharonClick = null;
     
     this.raycaster = null;
@@ -53,6 +54,7 @@ export class SolarSystemScene {
     this.lensFlareLevel = 1;
     this.asteroidBelt = null;
     this.kuiperBelt = null;
+    this.namedAsteroids = [];
     this.loadingManager = null;
     this.onLoaded = null;
     this.suspended = false;
@@ -136,6 +138,9 @@ export class SolarSystemScene {
 
     this.kuiperBelt = createKuiperBelt(3200, 3700);
     this.solarSystem.add(this.kuiperBelt);
+
+    // 知名小行星：谷神星、灶神星、智神星、婚神星
+    this.namedAsteroids = this.createNamedAsteroids();
     
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
@@ -283,13 +288,29 @@ export class SolarSystemScene {
         return;
       }
       
+      // 检测知名小行星
+      if (this.namedAsteroids && this.namedAsteroids.length > 0) {
+        const astMeshes = this.namedAsteroids.map(a => a.mesh);
+        const astIntersects = this.raycaster.intersectObjects(astMeshes);
+        if (astIntersects.length > 0 && this.onAsteroidClick) {
+          const hit = this.namedAsteroids.find(a => a.mesh === astIntersects[0].object);
+          if (hit) {
+            const target = { name: hit.name, mesh: hit.mesh, radius: hit.radius, isAsteroid: true };
+            this.currentTargetPlanet = target;
+            this.moveCameraToPlanet(target);
+            this.onAsteroidClick(hit);
+          }
+          return;
+        }
+      }
+      
       // 最后检测太阳
       const sunIntersects = this.raycaster.intersectObject(this.sun);
       if (sunIntersects.length > 0 && this.onSunClick) {
         const sunTarget = {
           name: '太阳',
           mesh: this.sun,
-          radius: 50
+          radius: 120
         };
         this.currentTargetPlanet = sunTarget;
         this.moveCameraToPlanet(sunTarget);
@@ -309,6 +330,8 @@ export class SolarSystemScene {
       closeUpDistance = 120;
     } else if (planet.isMoon) {
       closeUpDistance = planet.radius * 4;
+    } else if (planet.isAsteroid) {
+      closeUpDistance = planet.radius * 5;
     } else if (planet.name === '土星') {
       closeUpDistance = planet.radius * 4;
     } else if (planet.name === '木星') {
@@ -486,6 +509,15 @@ export class SolarSystemScene {
     if (this.kuiperBelt) {
       this.kuiperBelt.rotation.y += 0.0001 * this.timeSpeed;
     }
+    // 知名小行星公转 + 自转
+    if (this.namedAsteroids) {
+      this.namedAsteroids.forEach(a => {
+        const angle = time * 0.0001 * a.orbitSpeed * this.timeSpeed;
+        a.mesh.position.x = Math.cos(angle) * a.distance;
+        a.mesh.position.z = Math.sin(angle) * a.distance;
+        a.mesh.rotation.y += 0.005 * this.timeSpeed;
+      });
+    }
   }
 
   updateSun() {
@@ -606,7 +638,7 @@ export class SolarSystemScene {
   // 供导航面板调用：按名称跳转并聚焦某天体
   focusByName(name) {
     if (name === '太阳') {
-      const t = { name: '太阳', mesh: this.sun, radius: 50 };
+      const t = { name: '太阳', mesh: this.sun, radius: 120 };
       this.currentTargetPlanet = t;
       this.moveCameraToPlanet(t);
       if (this.onSunClick) this.onSunClick();
@@ -630,6 +662,17 @@ export class SolarSystemScene {
             return;
           }
         }
+      }
+    }
+    // Check named asteroids
+    if (this.namedAsteroids) {
+      const ast = this.namedAsteroids.find(a => a.name === name);
+      if (ast) {
+        const t = { name: ast.name, mesh: ast.mesh, radius: ast.radius, isAsteroid: true };
+        this.currentTargetPlanet = t;
+        this.moveCameraToPlanet(t);
+        if (this.onAsteroidClick) this.onAsteroidClick(ast);
+        return;
       }
     }
     const target = this.planetMeshes.find(p => p.name === name);
@@ -828,8 +871,57 @@ export class SolarSystemScene {
       
       positions['太阳'] = { x, y, visible: this.showNames };
     }
+
+    // 知名小行星标签
+    if (this.namedAsteroids) {
+      this.namedAsteroids.forEach(a => {
+        const vector = new THREE.Vector3();
+        vector.setFromMatrixPosition(a.mesh.matrixWorld);
+        vector.project(this.camera);
+        const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+        positions[a.name] = { x, y, visible: this.showNames };
+      });
+    }
     
     return positions;
+  }
+
+  // 知名小行星：程序化不规则形状 + 自转
+  createNamedAsteroids() {
+    const data = [
+      { name: '谷神星', distance: 770, radius: 5, color: 0x8a8578, orbitSpeed: 0.07, fact: '小行星带最大天体，矮行星，直径940公里，表面有盐类沉积。' },
+      { name: '灶神星', distance: 700, radius: 3.5, color: 0x9a8a70, orbitSpeed: 0.09, fact: '小行星带第二大战体，直径525公里，南极有巨大撞击坑。' },
+      { name: '智神星', distance: 830, radius: 3, color: 0x8a8070, orbitSpeed: 0.06, fact: '小行星带第三大战体，直径512公里，轨道倾角高达34°。' },
+      { name: '婚神星', distance: 870, radius: 2.5, color: 0x7a7060, orbitSpeed: 0.055, fact: '小行星带第四大战体，直径250公里，以罗马婚姻女神命名。' }
+    ];
+
+    const asteroids = [];
+    data.forEach(d => {
+      const geo = new THREE.IcosahedronGeometry(d.radius, 1);
+      // 随机变形使其不规则
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const nx = pos.getX(i), ny = pos.getY(i), nz = pos.getZ(i);
+        const noise = 0.7 + Math.random() * 0.6;
+        pos.setXYZ(i, nx * noise, ny * noise * (0.7 + Math.random() * 0.6), nz * noise);
+      }
+      geo.computeVertexNormals();
+
+      const mat = new THREE.MeshStandardMaterial({
+        color: d.color,
+        roughness: 0.95,
+        metalness: 0.03,
+        flatShading: true
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.x = d.distance;
+      mesh.castShadow = true;
+      this.solarSystem.add(mesh);
+
+      asteroids.push({ mesh, name: d.name, distance: d.distance, orbitSpeed: d.orbitSpeed, radius: d.radius, fact: d.fact });
+    });
+    return asteroids;
   }
 
   dispose() {

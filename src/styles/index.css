@@ -139,6 +139,16 @@ body {
   letter-spacing: 0.12em;
   color: rgba(255, 255, 255, 0.55);
   margin: 0.3rem 0.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.nav-collapse-icon {
+  font-size: 0.6rem;
+  width: 0.8rem;
+  text-align: center;
+  transition: transform 0.2s;
 }
 
 .nav-items { display: flex; flex-direction: column; gap: 0.15rem; }

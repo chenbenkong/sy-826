@@ -112,6 +112,17 @@ export default function App() {
       }
     };
 
+    scene.onAsteroidClick = (asteroid) => {
+      setSelectedCelestial({
+        name: asteroid.name,
+        colorHex: '#8a8578',
+        type: '小行星',
+        fact: asteroid.fact,
+        realDiameter: Math.round(asteroid.radius * 80) + '公里（估算）',
+        realDistance: '小行星带'
+      });
+    };
+
     return () => {
       if (sceneRef.current) {
         sceneRef.current.dispose();
