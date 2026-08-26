@@ -2,27 +2,62 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import {
+  GodRaysShader,
+  ChromaticAberrationShader,
+  ColorGradingShader,
+  VignetteGrainShader
+} from './cinematicShaders.js';
 
-// 后期处理管线：场景渲染 -> 辉光 -> 输出（负责色彩空间与色调映射）
+// ═══════════════════════════════════════════════════════════════
+// 电影级后期处理管线
+// 渲染顺序：场景 → 辉光 → 体积光 → 色差 → 色阶 → 暗角颗粒 → ACES输出
+// ═══════════════════════════════════════════════════════════════
 export function createComposer(renderer, scene, camera) {
   const size = new THREE.Vector2();
   renderer.getSize(size);
 
   const composer = new EffectComposer(renderer);
+
+  // 1. 场景渲染
   composer.addPass(new RenderPass(scene, camera));
 
-  // strength 辉光强度 / radius 扩散半径 / threshold 仅高亮区域发光
+  // 2. Bloom 辉光 — 太阳与高亮区域柔和发光
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(size.x, size.y),
-    0.45, // strength：太阳与亮星柔和发光，不洗白行星
-    0.5,  // radius
-    0.82  // threshold
+    0.45,  // strength
+    0.5,   // radius
+    0.82   // threshold
   );
   composer.addPass(bloomPass);
 
-  // OutputPass 统一做 ACES 色调映射 + sRGB 转换，避免双重映射
+  // 3. God Rays 体积光 — 太阳放射状光柱
+  const godRaysPass = new ShaderPass(GodRaysShader);
+  composer.addPass(godRaysPass);
+
+  // 4. Chromatic Aberration 色差 — 镜头边缘 RGB 偏移
+  const chromaticPass = new ShaderPass(ChromaticAberrationShader);
+  composer.addPass(chromaticPass);
+
+  // 5. Color Grading 色阶 — 电影级暗部/中间调/亮部分区调色
+  const colorGradingPass = new ShaderPass(ColorGradingShader);
+  composer.addPass(colorGradingPass);
+
+  // 6. Vignette + Film Grain 暗角 + 胶片颗粒
+  const vignetteGrainPass = new ShaderPass(VignetteGrainShader);
+  composer.addPass(vignetteGrainPass);
+
+  // 7. OutputPass — ACES 色调映射 + sRGB 转换
   composer.addPass(new OutputPass());
 
-  return { composer, bloomPass };
+  return {
+    composer,
+    bloomPass,
+    godRaysPass,
+    chromaticPass,
+    colorGradingPass,
+    vignetteGrainPass
+  };
 }

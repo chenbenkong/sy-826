@@ -41,8 +41,14 @@ export class SolarSystemScene {
 
     this.composer = null;
     this.bloomPass = null;
+    this.godRaysPass = null;
+    this.chromaticPass = null;
+    this.colorGradingPass = null;
+    this.vignetteGrainPass = null;
     this.composerBroken = false;
     this.bloomEnabled = true;
+    this.godRaysEnabled = true;
+    this.chromaticEnabled = true;
     this.asteroidBelt = null;
     this.loadingManager = null;
     this.onLoaded = null;
@@ -131,15 +137,23 @@ export class SolarSystemScene {
     this.setupResize();
     this.setupClick();
 
-    // 后期辉光管线（构造失败自动退回普通渲染）
+    // 后期电影级管线（构造失败自动退回普通渲染）
     try {
-      const { composer, bloomPass } = createComposer(this.renderer, this.scene, this.camera);
-      this.composer = composer;
-      this.bloomPass = bloomPass;
+      const pp = createComposer(this.renderer, this.scene, this.camera);
+      this.composer = pp.composer;
+      this.bloomPass = pp.bloomPass;
+      this.godRaysPass = pp.godRaysPass;
+      this.chromaticPass = pp.chromaticPass;
+      this.colorGradingPass = pp.colorGradingPass;
+      this.vignetteGrainPass = pp.vignetteGrainPass;
     } catch (e) {
-      console.error('[solar] 辉光管线初始化失败，退回普通渲染：', e);
+      console.error('[solar] 后期管线初始化失败，退回普通渲染：', e);
       this.composer = null;
       this.bloomPass = null;
+      this.godRaysPass = null;
+      this.chromaticPass = null;
+      this.colorGradingPass = null;
+      this.vignetteGrainPass = null;
     }
 
     this.animate();
@@ -367,7 +381,10 @@ export class SolarSystemScene {
     // 防止相机进入星球内部
     this.preventCameraInsidePlanets();
 
-    // 渲染：辉光开启且管线正常时走后期，否则普通渲染
+    // 更新后期处理 uniforms
+    this.updatePostProcessing(time);
+
+    // 渲染：后期管线正常时走电影级渲染，否则普通渲染
     if (this.composerBroken || !this.composer || !this.bloomEnabled) {
       this.renderer.render(this.scene, this.camera);
       return;
@@ -482,6 +499,46 @@ export class SolarSystemScene {
 
   setBloom(enabled) {
     this.bloomEnabled = enabled;
+  }
+
+  setGodRays(enabled) {
+    this.godRaysEnabled = enabled;
+    if (this.godRaysPass) {
+      this.godRaysPass.uniforms.intensity.value = enabled ? 0.55 : 0.0;
+    }
+  }
+
+  setChromatic(enabled) {
+    this.chromaticEnabled = enabled;
+    if (this.chromaticPass) {
+      this.chromaticPass.uniforms.amount.value = enabled ? 0.003 : 0.0;
+    }
+  }
+
+  // 每帧更新后期处理 uniforms（太阳屏幕坐标、时间等）
+  updatePostProcessing(time) {
+    if (!this.composer || this.composerBroken) return;
+
+    // God Rays: 投影太阳到屏幕空间，传递 UV 坐标
+    if (this.godRaysPass && this.sun) {
+      const sunNDC = this.sun.position.clone().project(this.camera);
+      // 太阳在相机背后时 z > 1，禁用光柱
+      const behind = sunNDC.z > 1;
+      this.godRaysPass.uniforms.sunPosition.value.set(
+        (sunNDC.x + 1) * 0.5,
+        (sunNDC.y + 1) * 0.5
+      );
+      if (this.godRaysEnabled && !behind) {
+        this.godRaysPass.uniforms.intensity.value = 0.55;
+      } else {
+        this.godRaysPass.uniforms.intensity.value = 0.0;
+      }
+    }
+
+    // Vignette + Grain: 更新时间（驱动动态颗粒）
+    if (this.vignetteGrainPass) {
+      this.vignetteGrainPass.uniforms.time.value = time;
+    }
   }
 
   // 挂起/恢复渲染循环（黑洞体验期间使用）

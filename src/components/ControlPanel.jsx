@@ -7,6 +7,8 @@ export function ControlPanel({
   showStars,
   showNames,
   showBloom,
+  showGodRays,
+  showChromatic,
   globalScale,
   isMusicPlaying,
   onTogglePause,
@@ -16,6 +18,8 @@ export function ControlPanel({
   onToggleStars,
   onToggleNames,
   onToggleBloom,
+  onToggleGodRays,
+  onToggleChromatic,
   onResetView,
   onToggleMusic,
   onBlackHole
@@ -71,6 +75,12 @@ export function ControlPanel({
         </button>
         <button className={showBloom ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleBloom}>
           辉光
+        </button>
+        <button className={showGodRays ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleGodRays}>
+          光柱
+        </button>
+        <button className={showChromatic ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleChromatic}>
+          色差
         </button>
         <button className={isMusicPlaying ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleMusic}>
           {isMusicPlaying ? '♪ 静音' : '♪ 音乐'}

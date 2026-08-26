@@ -48,6 +48,8 @@ export default function App() {
   const [showStars, setShowStars] = useState(true);
   const [showNames, setShowNames] = useState(true);
   const [bloom, setBloom] = useState(true);
+  const [godRays, setGodRays] = useState(true);
+  const [chromatic, setChromatic] = useState(true);
   const [globalScale, setGlobalScale] = useState(1.0);
   const [selectedCelestial, setSelectedCelestial] = useState(null);
   const [planetPositions, setPlanetPositions] = useState(null);
@@ -190,6 +192,26 @@ export default function App() {
     });
   }, []);
 
+  const handleToggleGodRays = useCallback(() => {
+    setGodRays(prev => {
+      const newValue = !prev;
+      if (sceneRef.current) {
+        sceneRef.current.setGodRays(newValue);
+      }
+      return newValue;
+    });
+  }, []);
+
+  const handleToggleChromatic = useCallback(() => {
+    setChromatic(prev => {
+      const newValue = !prev;
+      if (sceneRef.current) {
+        sceneRef.current.setChromatic(newValue);
+      }
+      return newValue;
+    });
+  }, []);
+
   const handleResetView = useCallback(() => {
     if (sceneRef.current) {
       sceneRef.current.resetView();
@@ -293,6 +315,8 @@ export default function App() {
         showStars={showStars}
         showNames={showNames}
         showBloom={bloom}
+        showGodRays={godRays}
+        showChromatic={chromatic}
         globalScale={globalScale}
         isMusicPlaying={isMusicPlaying}
         onTogglePause={handleTogglePause}
@@ -302,6 +326,8 @@ export default function App() {
         onToggleStars={handleToggleStars}
         onToggleNames={handleToggleNames}
         onToggleBloom={handleToggleBloom}
+        onToggleGodRays={handleToggleGodRays}
+        onToggleChromatic={handleToggleChromatic}
         onResetView={handleResetView}
         onToggleMusic={handleToggleMusic}
         onBlackHole={handleEnterBlackHole}
