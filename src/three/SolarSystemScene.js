@@ -107,6 +107,7 @@ export class SolarSystemScene {
       // 只有在非缩放操作时取消追踪
       if (this.currentTargetPlanet && !isZooming) {
         this.currentTargetPlanet = null;
+        this._trackingOffset = null;
       }
     });
     
@@ -547,23 +548,23 @@ export class SolarSystemScene {
   }
 
   updateCameraTracking() {
+    if (!this.currentTargetPlanet || !this.currentTargetPlanet.mesh) return;
+
     const worldPosition = new THREE.Vector3();
     this.currentTargetPlanet.mesh.getWorldPosition(worldPosition);
-    
-    // 根据时间速度动态调整相机跟随速度
-    // 基础速度0.08，时间速度越快，跟随速度也越快
-    const adaptiveSpeed = Math.min(0.08 * Math.max(this.timeSpeed, 1), 0.3);
-    
-    // 计算相机相对于目标的位置偏移
-    const offset = new THREE.Vector3().subVectors(this.camera.position, this.controls.target);
-    
-    // 更新目标点到行星位置（使用自适应速度）
-    this.controls.target.lerp(worldPosition, adaptiveSpeed);
-    
-    // 保持相机相对位置跟随目标
-    const newCameraPosition = new THREE.Vector3().addVectors(worldPosition, offset);
-    this.camera.position.lerp(newCameraPosition, adaptiveSpeed);
-    
+
+    // 直接跟随：相机始终锁定目标当前位置，不再用 lerp 插值
+    this.controls.target.copy(worldPosition);
+
+    // 保持相机与目标之间的相对偏移量
+    if (!this._trackingOffset) {
+      // 首次进入追踪时，记录相机与目标的偏移
+      this._trackingOffset = new THREE.Vector3().subVectors(this.camera.position, worldPosition);
+    }
+
+    const targetCamPos = new THREE.Vector3().addVectors(worldPosition, this._trackingOffset);
+    this.camera.position.copy(targetCamPos);
+
     this.controls.update();
   }
 
@@ -700,7 +701,7 @@ export class SolarSystemScene {
 
     // 检查太阳
     const sunDistance = cameraPos.distanceTo(this.sun.position);
-      const sunMinDistance = 125; // 太阳半径120 + 缓冲5
+      const sunMinDistance = 310; // 太阳半径300 + 缓冲10
     if (sunDistance < sunMinDistance) {
       const direction = this.safeDir(cameraPos, this.sun.position);
       this.camera.position.copy(this.sun.position.clone().add(direction.multiplyScalar(sunMinDistance)));
@@ -839,13 +840,16 @@ export class SolarSystemScene {
   }
 
   resetView() {
-    this.camera.position.set(0, 300, 800);
-    this.controls.reset();
+    this.camera.position.set(0, 600, 1800);
+    this.controls.target.set(0, 0, 0);
+    this.controls.update();
     this.currentTargetPlanet = null;
+    this._trackingOffset = null;
   }
 
   cancelTracking() {
     this.currentTargetPlanet = null;
+    this._trackingOffset = null;
   }
 
   getPlanetScreenPositions() {

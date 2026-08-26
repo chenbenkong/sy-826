@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { createSunSurfaceShader } from './sunShaders.js';
 
 export function createSun(manager) {
-  const sunRadius = 120;
+  const sunRadius = 300;
 
   const sunGeometry = new THREE.SphereGeometry(sunRadius, 128, 128);
 
