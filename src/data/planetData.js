@@ -101,10 +101,10 @@ export const planetData = [
     ringOpacity: 0.1,
     fact: '太阳系最大行星，质量超其他行星总和的两倍。大红斑是已持续数百年的巨型风暴。',
     moonsList: [
-      { name: '木卫一（伊奥）', radiusRatio: 0.286, distanceRatio: 1.5, orbitSpeed: 4.5, rotationSpeed: 0.002 },
-      { name: '木卫二（欧罗巴）', radiusRatio: 0.245, distanceRatio: 1.9, orbitSpeed: 3.2, rotationSpeed: 0.0015 },
-      { name: '木卫三（盖尼米德）', radiusRatio: 0.413, distanceRatio: 2.4, orbitSpeed: 2.1, rotationSpeed: 0.001 },
-      { name: '木卫四（卡里斯托）', radiusRatio: 0.382, distanceRatio: 3.0, orbitSpeed: 1.5, rotationSpeed: 0.0008 }
+      { name: '木卫一（伊奥）', radiusRatio: 0.07, distanceRatio: 1.5, orbitSpeed: 4.5, rotationSpeed: 0.002 },
+      { name: '木卫二（欧罗巴）', radiusRatio: 0.06, distanceRatio: 1.9, orbitSpeed: 3.2, rotationSpeed: 0.0015 },
+      { name: '木卫三（盖尼米德）', radiusRatio: 0.10, distanceRatio: 2.4, orbitSpeed: 2.1, rotationSpeed: 0.001 },
+      { name: '木卫四（卡里斯托）', radiusRatio: 0.09, distanceRatio: 3.0, orbitSpeed: 1.5, rotationSpeed: 0.0008 }
     ]
   },
   {
@@ -130,8 +130,8 @@ export const planetData = [
     ringColors: [0xcccccc, 0xdddddd, 0xeeeeee, 0xffffff],
     fact: '以壮观的行星环闻名，环主要由冰粒与岩石碎块组成，宽度可达数十万公里却极薄。',
     moonsList: [
-      { name: '土卫六（泰坦）', radiusRatio: 0.404, distanceRatio: 2.0, orbitSpeed: 1.8, rotationSpeed: 0.001 },
-      { name: '土卫二（恩克拉多斯）', radiusRatio: 0.039, distanceRatio: 1.5, orbitSpeed: 3.5, rotationSpeed: 0.003 }
+      { name: '土卫六（泰坦）', radiusRatio: 0.10, distanceRatio: 2.0, orbitSpeed: 1.8, rotationSpeed: 0.001 },
+      { name: '土卫二（恩克拉多斯）', radiusRatio: 0.01, distanceRatio: 1.5, orbitSpeed: 3.5, rotationSpeed: 0.003 }
     ]
   },
   {
