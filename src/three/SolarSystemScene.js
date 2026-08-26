@@ -5,6 +5,7 @@ import { createPlanets } from './planets/createPlanets.js';
 import { createStarfield } from './utils/createStarfield.js';
 import { createComposer } from './postprocessing/createComposer.js';
 import { createAsteroidBelt, createKuiperBelt } from './objects/createAsteroidBelt.js';
+import { createAsteroidTextures } from './objects/asteroidTextures.js';
 
 export class SolarSystemScene {
   constructor(container) {
@@ -887,36 +888,50 @@ export class SolarSystemScene {
     return positions;
   }
 
-  // 知名小行星：程序化不规则形状 + 自转
+  // 知名小行星：真实比例 + 程序化岩石纹理 + 法线贴图
   createNamedAsteroids() {
+    // 真实直径(km) → 半径(地球=10基准): diameter / 12756 * 10
     const data = [
-      { name: '谷神星', distance: 1150, radius: 5, color: 0x8a8578, orbitSpeed: 0.07, fact: '小行星带最大天体，矮行星，直径940公里，表面有盐类沉积。' },
-      { name: '灶神星', distance: 1050, radius: 3.5, color: 0x9a8a70, orbitSpeed: 0.09, fact: '小行星带第二大战体，直径525公里，南极有巨大撞击坑。' },
-      { name: '智神星', distance: 1250, radius: 3, color: 0x8a8070, orbitSpeed: 0.06, fact: '小行星带第三大战体，直径512公里，轨道倾角高达34°。' },
-      { name: '婚神星', distance: 1350, radius: 2.5, color: 0x7a7060, orbitSpeed: 0.055, fact: '小行星带第四大战体，直径250公里，以罗马婚姻女神命名。' }
+      { name: '谷神星', distance: 1150, radius: 0.74, orbitSpeed: 0.07, seed: 1, fact: '小行星带最大天体，矮行星，直径940公里，表面有盐类沉积。' },
+      { name: '灶神星', distance: 1050, radius: 0.41, orbitSpeed: 0.09, seed: 2, fact: '小行星带第二大战体，直径525公里，南极有巨大撞击坑。' },
+      { name: '智神星', distance: 1250, radius: 0.40, orbitSpeed: 0.06, seed: 3, fact: '小行星带第三大战体，直径512公里，轨道倾角高达34°。' },
+      { name: '婚神星', distance: 1350, radius: 0.20, orbitSpeed: 0.055, seed: 4, fact: '小行星带第四大战体，直径250公里，以罗马婚姻女神命名。' }
     ];
 
     const asteroids = [];
     data.forEach(d => {
-      const geo = new THREE.IcosahedronGeometry(d.radius, 1);
-      // 随机变形使其不规则
+      // 高细分 + 不规则变形：小天体引力不足以形成球体
+      const geo = new THREE.IcosahedronGeometry(d.radius, 4);
       const pos = geo.attributes.position;
       for (let i = 0; i < pos.count; i++) {
         const nx = pos.getX(i), ny = pos.getY(i), nz = pos.getZ(i);
-        const noise = 0.7 + Math.random() * 0.6;
-        pos.setXYZ(i, nx * noise, ny * noise * (0.7 + Math.random() * 0.6), nz * noise);
+        const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len < 0.001) continue;
+        // 多层噪声变形
+        const noise1 = 0.85 + Math.sin(nx * 5.3 + d.seed) * 0.15;
+        const noise2 = 0.9 + Math.cos(ny * 4.7 + d.seed * 2) * 0.1;
+        const noise3 = 0.88 + Math.sin(nz * 6.1 + d.seed * 3) * 0.12;
+        const deform = noise1 * noise2 * noise3;
+        pos.setXYZ(i, nx * deform, ny * deform * (0.75 + Math.sin(d.seed) * 0.15), nz * deform);
       }
       geo.computeVertexNormals();
 
+      // 程序化岩石纹理 + 法线贴图
+      const { albedo, normal } = createAsteroidTextures(256, d.seed);
+
       const mat = new THREE.MeshStandardMaterial({
-        color: d.color,
-        roughness: 0.95,
-        metalness: 0.03,
-        flatShading: true
+        map: albedo,
+        normalMap: normal,
+        normalScale: new THREE.Vector2(1.5, 1.5),
+        roughness: 0.92,
+        metalness: 0.04,
+        flatShading: false
       });
+
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.x = d.distance;
       mesh.castShadow = true;
+      mesh.receiveShadow = true;
       this.solarSystem.add(mesh);
 
       asteroids.push({ mesh, name: d.name, distance: d.distance, orbitSpeed: d.orbitSpeed, radius: d.radius, fact: d.fact });

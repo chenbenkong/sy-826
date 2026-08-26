@@ -6,7 +6,7 @@ export function createAsteroidBelt(innerRadius = 1000, outerRadius = 1400, count
 
   const { albedo, normal } = buildRockTextures(512);
 
-  const geometry = new THREE.IcosahedronGeometry(1, 0);
+  const geometry = new THREE.IcosahedronGeometry(1, 2);
   const material = new THREE.MeshStandardMaterial({
     map: albedo,
     normalMap: normal,
@@ -196,7 +196,7 @@ export function createKuiperBelt(innerRadius = 6500, outerRadius = 7500, count =
 
   const { albedo, normal } = buildKuiperTextures(512);
 
-  const geometry = new THREE.IcosahedronGeometry(1, 0);
+  const geometry = new THREE.IcosahedronGeometry(1, 2);
   const material = new THREE.MeshStandardMaterial({
     map: albedo,
     normalMap: normal,
