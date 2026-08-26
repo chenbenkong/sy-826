@@ -12,7 +12,15 @@ const PLANETS = [
   { name: '海王星', emoji: '♆' },
   { name: '冥王星', emoji: '⯓' }
 ];
-const MOONS = [{ name: '月球', emoji: '🌙' }];
+const MOONS = [
+  { name: '月球', emoji: '🌙', parent: '地球' },
+  { name: '木卫一（伊奥）', emoji: '🌋', parent: '木星' },
+  { name: '木卫二（欧罗巴）', emoji: '🧊', parent: '木星' },
+  { name: '木卫三（盖尼米德）', emoji: '🪨', parent: '木星' },
+  { name: '木卫四（卡里斯托）', emoji: '🌑', parent: '木星' },
+  { name: '土卫六（泰坦）', emoji: '🌫️', parent: '土星' },
+  { name: '土卫二（恩克拉多斯）', emoji: '❄️', parent: '土星' }
+];
 
 export function NavigationPanel({ onSelect }) {
   const [open, setOpen] = useState(false);

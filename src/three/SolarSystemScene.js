@@ -230,22 +230,29 @@ export class SolarSystemScene {
       // 首先检测月球（因为它是子对象，需要优先检测）
       const moonMeshes = [];
       this.planetMeshes.forEach(planet => {
-        if (planet.moon) moonMeshes.push(planet.moon);
+        if (planet.moons && planet.moons.length > 0) {
+          planet.moons.forEach(me => moonMeshes.push(me.mesh));
+        }
       });
       const moonIntersects = this.raycaster.intersectObjects(moonMeshes);
       if (moonIntersects.length > 0 && this.onMoonClick) {
-        const planet = this.planetMeshes.find(p => p.moon === moonIntersects[0].object);
+        const hitMoon = moonIntersects[0].object;
+        const planet = this.planetMeshes.find(p =>
+          p.moons && p.moons.some(me => me.mesh === hitMoon)
+        );
         if (planet) {
+          const moonEntry = planet.moons.find(me => me.mesh === hitMoon);
+          const moonCfg = moonEntry ? moonEntry.config : {};
           const moonTarget = {
-            name: '月球',
-            mesh: planet.moon,
-            radius: planet.moon.geometry.parameters.radius,
+            name: moonCfg.name || '月球',
+            mesh: hitMoon,
+            radius: hitMoon.geometry.parameters.radius,
             isMoon: true,
             parentPlanet: planet
           };
           this.currentTargetPlanet = moonTarget;
           this.moveCameraToPlanet(moonTarget);
-          this.onMoonClick();
+          this.onMoonClick(moonCfg.name || '月球');
         }
         return;
       }
@@ -295,15 +302,15 @@ export class SolarSystemScene {
     // 计算特写距离 - 根据星球大小调整
     let closeUpDistance;
     if (planet.name === '太阳') {
-      closeUpDistance = 120; // 太阳特写距离
-    } else if (planet.name === '月球') {
-      closeUpDistance = 15; // 月球特写距离
+      closeUpDistance = 120;
+    } else if (planet.isMoon) {
+      closeUpDistance = planet.radius * 4;
     } else if (planet.name === '土星') {
-      closeUpDistance = planet.radius * 4; // 土星要考虑环
+      closeUpDistance = planet.radius * 4;
     } else if (planet.name === '木星') {
       closeUpDistance = planet.radius * 2.5;
     } else {
-      closeUpDistance = planet.radius * 3; // 其他行星
+      closeUpDistance = planet.radius * 3;
     }
     
     // 设置相机目标位置（星球前方）
@@ -437,12 +444,15 @@ export class SolarSystemScene {
       const z = Math.sin(angle) * planet.distance;
       planet.mesh.position.set(x, 0, z);
       
-      if (planet.moon) {
-        const moonAngle = time * 0.001 * 2 * this.timeSpeed;
-        const moonRadius = planet.radius * 2;
-        planet.moon.position.x = moonRadius * Math.cos(moonAngle);
-        planet.moon.position.z = moonRadius * Math.sin(moonAngle);
-        planet.moon.rotation.y += 0.0003 * this.timeSpeed;
+      if (planet.moons && planet.moons.length > 0) {
+        planet.moons.forEach((moonEntry) => {
+          const cfg = moonEntry.config;
+          const moonAngle = time * 0.0001 * cfg.orbitSpeed * this.timeSpeed;
+          const moonDist = cfg.orbitDistance;
+          moonEntry.mesh.position.x = moonDist * Math.cos(moonAngle);
+          moonEntry.mesh.position.z = moonDist * Math.sin(moonAngle);
+          moonEntry.mesh.rotation.y += cfg.rotationSpeed * this.timeSpeed;
+        });
       }
 
       if (planet.name === '地球') {
@@ -594,20 +604,24 @@ export class SolarSystemScene {
       if (this.onSunClick) this.onSunClick();
       return;
     }
-    if (name === '月球') {
-      const planet = this.planetMeshes.find(p => p.moon);
-      if (planet && planet.moon) {
-        const t = {
-          name: '月球',
-          mesh: planet.moon,
-          radius: planet.moon.geometry.parameters.radius,
-          isMoon: true,
-          parentPlanet: planet
-        };
-        this.currentTargetPlanet = t;
-        this.moveCameraToPlanet(t);
-        if (this.onMoonClick) this.onMoonClick();
-        return;
+    // Check all moons (multi-moon system)
+    for (const planet of this.planetMeshes) {
+      if (planet.moons && planet.moons.length > 0) {
+        for (const me of planet.moons) {
+          if (me.config.name === name) {
+            const t = {
+              name,
+              mesh: me.mesh,
+              radius: me.mesh.geometry.parameters.radius,
+              isMoon: true,
+              parentPlanet: planet
+            };
+            this.currentTargetPlanet = t;
+            this.moveCameraToPlanet(t);
+            if (this.onMoonClick) this.onMoonClick(name);
+            return;
+          }
+        }
       }
     }
     const target = this.planetMeshes.find(p => p.name === name);

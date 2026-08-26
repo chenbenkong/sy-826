@@ -8,7 +8,7 @@ import { PlanetLabels } from './components/PlanetLabels';
 import { Header } from './components/Header';
 import { LoadingScreen } from './components/LoadingScreen';
 import { BlackHoleOverlay } from './components/BlackHoleOverlay';
-import { sunInfo, moonInfo } from './data/planetData';
+import { sunInfo, moonInfo, jupiterMoonInfo, saturnMoonInfo } from './data/planetData';
 import './styles/index.css';
 
 // 错误边界：捕获子组件渲染期异常，避免整页空白（黑屏）且无提示
@@ -51,6 +51,7 @@ export default function App() {
   const [godRays, setGodRays] = useState(true);
   const [chromatic, setChromatic] = useState(true);
   const [lensFlare, setLensFlare] = useState(true);
+  const [cinemaMode, setCinemaMode] = useState(false);
   const [globalScale, setGlobalScale] = useState(1.0);
   const [selectedCelestial, setSelectedCelestial] = useState(null);
   const [planetPositions, setPlanetPositions] = useState(null);
@@ -99,8 +100,16 @@ export default function App() {
       setSelectedCelestial(sunInfo);
     };
 
-    scene.onMoonClick = () => {
-      setSelectedCelestial(moonInfo);
+    scene.onMoonClick = (moonName) => {
+      if (moonName === '月球') {
+        setSelectedCelestial(moonInfo);
+      } else if (jupiterMoonInfo[moonName]) {
+        setSelectedCelestial(jupiterMoonInfo[moonName]);
+      } else if (saturnMoonInfo[moonName]) {
+        setSelectedCelestial(saturnMoonInfo[moonName]);
+      } else {
+        setSelectedCelestial(moonInfo);
+      }
     };
 
     return () => {
@@ -128,6 +137,15 @@ export default function App() {
     const t = setTimeout(() => setLoaded(true), 6000);
     return () => clearTimeout(t);
   }, []);
+
+  // Esc 退出影院模式
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape' && cinemaMode) setCinemaMode(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [cinemaMode]);
 
   const handleTogglePause = useCallback(() => {
     setIsPaused(prev => {
@@ -300,49 +318,53 @@ export default function App() {
       <div className="vignette" />
       <div className="grain" />
       <LoadingScreen visible={!loaded} progress={loaded ? 100 : 35} />
-      <Header zoomLevel={globalScale} speedLevel={timeSpeed} isPaused={isPaused} />
 
       <div ref={containerRef} className="canvas-container" />
 
-      <StatusDisplay
-        zoomLevel={globalScale}
-        speedLevel={timeSpeed}
-      />
+      {!cinemaMode && (
+        <>
+          <Header zoomLevel={globalScale} speedLevel={timeSpeed} isPaused={isPaused} />
+          <StatusDisplay zoomLevel={globalScale} speedLevel={timeSpeed} />
+          <PlanetLabels positions={planetPositions} />
+          <NavigationPanel onSelect={(name) => sceneRef.current?.focusByName(name)} />
+          <PlanetInfo
+            celestial={selectedCelestial}
+            onClose={handleCloseInfo}
+            onCancelTracking={handleCancelTracking}
+          />
+          <ControlPanel
+            isPaused={isPaused}
+            timeSpeed={timeSpeed}
+            showOrbits={showOrbits}
+            showStars={showStars}
+            showNames={showNames}
+            showBloom={bloom}
+            showLensFlare={lensFlare}
+            globalScale={globalScale}
+            isMusicPlaying={isMusicPlaying}
+            onTogglePause={handleTogglePause}
+            onSpeedChange={handleSpeedChange}
+            onZoomChange={handleZoomChange}
+            onToggleOrbits={handleToggleOrbits}
+            onToggleStars={handleToggleStars}
+            onToggleNames={handleToggleNames}
+            onToggleBloom={handleToggleBloom}
+            onToggleLensFlare={handleToggleLensFlare}
+            onResetView={handleResetView}
+            onToggleMusic={handleToggleMusic}
+            onBlackHole={handleEnterBlackHole}
+          />
+        </>
+      )}
 
-      <PlanetLabels positions={planetPositions} />
-
-      <NavigationPanel onSelect={(name) => sceneRef.current?.focusByName(name)} />
-
-      <PlanetInfo
-        celestial={selectedCelestial}
-        onClose={handleCloseInfo}
-        onCancelTracking={handleCancelTracking}
-      />
-
-      <ControlPanel
-        isPaused={isPaused}
-        timeSpeed={timeSpeed}
-        showOrbits={showOrbits}
-        showStars={showStars}
-        showNames={showNames}
-        showBloom={bloom}
-        showGodRays={godRays}
-        showChromatic={chromatic}
-        showLensFlare={lensFlare}
-        globalScale={globalScale}
-        isMusicPlaying={isMusicPlaying}
-        onTogglePause={handleTogglePause}
-        onSpeedChange={handleSpeedChange}
-        onZoomChange={handleZoomChange}
-        onToggleOrbits={handleToggleOrbits}
-        onToggleStars={handleToggleStars}
-        onToggleNames={handleToggleNames}
-        onToggleBloom={handleToggleBloom}
-        onToggleLensFlare={handleToggleLensFlare}
-        onResetView={handleResetView}
-        onToggleMusic={handleToggleMusic}
-        onBlackHole={handleEnterBlackHole}
-      />
+      {/* 影院模式切换按钮：始终可见 */}
+      <button
+        className="cinema-btn"
+        onClick={() => setCinemaMode(prev => !prev)}
+        title={cinemaMode ? '退出影院模式 (Esc)' : '影院模式：隐藏所有 UI'}
+      >
+        {cinemaMode ? '✕' : '◎'}
+      </button>
 
       {blackHoleMode && <BlackHoleOverlay onExit={handleExitBlackHole} />}
       </div>

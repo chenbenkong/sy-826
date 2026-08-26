@@ -2,7 +2,7 @@ export const planetData = [
   {
     name: '水星',
     radius: 4,
-    distance: 100,
+    distance: 90,
     color: 0xaaaaaa,
     colorHex: '#b8b0a8',
     type: '类地行星',
@@ -21,7 +21,7 @@ export const planetData = [
   {
     name: '金星',
     radius: 9.5,
-    distance: 150,
+    distance: 140,
     color: 0xe39e54,
     colorHex: '#e6a85c',
     type: '类地行星',
@@ -62,7 +62,7 @@ export const planetData = [
   {
     name: '火星',
     radius: 5.3,
-    distance: 280,
+    distance: 300,
     color: 0xff3300,
     colorHex: '#e2562f',
     type: '类地行星',
@@ -82,7 +82,7 @@ export const planetData = [
   {
     name: '木星',
     radius: 30,
-    distance: 350,
+    distance: 500,
     color: 0xffaa88,
     colorHex: '#e0a878',
     type: '气态巨行星',
@@ -99,12 +99,18 @@ export const planetData = [
     tilt: 3.1,
     hasRings: true,
     ringOpacity: 0.1,
-    fact: '太阳系最大行星，质量超其他行星总和的两倍。大红斑是已持续数百年的巨型风暴。'
+    fact: '太阳系最大行星，质量超其他行星总和的两倍。大红斑是已持续数百年的巨型风暴。',
+    moonsList: [
+      { name: '木卫一（伊奥）', radiusRatio: 0.12, distanceRatio: 1.8, orbitSpeed: 4.5, rotationSpeed: 0.002 },
+      { name: '木卫二（欧罗巴）', radiusRatio: 0.11, distanceRatio: 2.3, orbitSpeed: 3.2, rotationSpeed: 0.0015 },
+      { name: '木卫三（盖尼米德）', radiusRatio: 0.16, distanceRatio: 3.0, orbitSpeed: 2.1, rotationSpeed: 0.001 },
+      { name: '木卫四（卡里斯托）', radiusRatio: 0.15, distanceRatio: 3.8, orbitSpeed: 1.5, rotationSpeed: 0.0008 }
+    ]
   },
   {
     name: '土星',
     radius: 25,
-    distance: 500,
+    distance: 750,
     color: 0xffd700,
     colorHex: '#e8c969',
     type: '气态巨行星',
@@ -122,12 +128,16 @@ export const planetData = [
     hasRings: true,
     ringOpacity: 0.7,
     ringColors: [0xcccccc, 0xdddddd, 0xeeeeee, 0xffffff],
-    fact: '以壮观的行星环闻名，环主要由冰粒与岩石碎块组成，宽度可达数十万公里却极薄。'
+    fact: '以壮观的行星环闻名，环主要由冰粒与岩石碎块组成，宽度可达数十万公里却极薄。',
+    moonsList: [
+      { name: '土卫六（泰坦）', radiusRatio: 0.18, distanceRatio: 2.5, orbitSpeed: 1.8, rotationSpeed: 0.001 },
+      { name: '土卫二（恩克拉多斯）', radiusRatio: 0.08, distanceRatio: 1.8, orbitSpeed: 3.5, rotationSpeed: 0.003 }
+    ]
   },
   {
     name: '天王星',
     radius: 18,
-    distance: 650,
+    distance: 1050,
     color: 0x99ccff,
     colorHex: '#9fd8ff',
     type: '冰巨星',
@@ -148,7 +158,7 @@ export const planetData = [
   {
     name: '海王星',
     radius: 17.5,
-    distance: 800,
+    distance: 1350,
     color: 0x3366ff,
     colorHex: '#3f6bff',
     type: '冰巨星',
@@ -168,7 +178,7 @@ export const planetData = [
   {
     name: '冥王星',
     radius: 2.3,
-    distance: 900,
+    distance: 1600,
     color: 0xaa7766,
     colorHex: '#b07d68',
     type: '矮行星',
@@ -223,4 +233,88 @@ export const charonInfo = {
   temperature: '-230°C / -220°C',
   moons: '0',
   atmosphere: '几乎没有'
+};
+
+export const jupiterMoonInfo = {
+  '木卫一（伊奥）': {
+    name: '木卫一（伊奥）',
+    colorHex: '#d4a030',
+    type: '卫星 · 伽利略卫星',
+    realDiameter: '3,643公里',
+    realDistance: '421,700公里 (与木星)',
+    orbitPeriod: '1.77天',
+    rotationPeriod: '1.77天 (潮汐锁定)',
+    temperature: '-130°C / 1,730°C',
+    moons: '0',
+    atmosphere: '二氧化硫',
+    fact: '太阳系中火山活动最剧烈的天体，拥有数百座活火山，表面被硫磺覆盖呈现黄橙色。'
+  },
+  '木卫二（欧罗巴）': {
+    name: '木卫二（欧罗巴）',
+    colorHex: '#c8d8e8',
+    type: '卫星 · 伽利略卫星',
+    realDiameter: '3,122公里',
+    realDistance: '671,034公里 (与木星)',
+    orbitPeriod: '3.55天',
+    rotationPeriod: '3.55天 (潮汐锁定)',
+    temperature: '-160°C',
+    moons: '0',
+    atmosphere: '几乎没有',
+    fact: '冰壳下可能存在全球性液态海洋，是太阳系中最可能存在地外生命的天体之一。'
+  },
+  '木卫三（盖尼米德）': {
+    name: '木卫三（盖尼米德）',
+    colorHex: '#a09880',
+    type: '卫星 · 伽利略卫星',
+    realDiameter: '5,268公里',
+    realDistance: '1,070,412公里 (与木星)',
+    orbitPeriod: '7.15天',
+    rotationPeriod: '7.15天 (潮汐锁定)',
+    temperature: '-163°C',
+    moons: '0',
+    atmosphere: '几乎没有',
+    fact: '太阳系最大的卫星，比水星还大。拥有自己的磁场，表面有明亮的冰原和暗色陨石坑。'
+  },
+  '木卫四（卡里斯托）': {
+    name: '木卫四（卡里斯托）',
+    colorHex: '#605848',
+    type: '卫星 · 伽利略卫星',
+    realDiameter: '4,821公里',
+    realDistance: '1,882,709公里 (与木星)',
+    orbitPeriod: '16.69天',
+    rotationPeriod: '16.69天 (潮汐锁定)',
+    temperature: '-139°C',
+    moons: '0',
+    atmosphere: '几乎没有',
+    fact: '表面布满陨石坑，是太阳系中陨石坑密度最高的天体之一。远离木星辐射带，相对安全。'
+  }
+};
+
+export const saturnMoonInfo = {
+  '土卫六（泰坦）': {
+    name: '土卫六（泰坦）',
+    colorHex: '#c89040',
+    type: '卫星 · 土星最大卫星',
+    realDiameter: '5,150公里',
+    realDistance: '1,221,870公里 (与土星)',
+    orbitPeriod: '15.95天',
+    rotationPeriod: '15.95天 (潮汐锁定)',
+    temperature: '-179°C',
+    moons: '0',
+    atmosphere: '氮气, 甲烷',
+    fact: '太阳系中唯一拥有浓厚大气层的卫星，表面有甲烷湖泊和河流，是地球外最像地球的天体。'
+  },
+  '土卫二（恩克拉多斯）': {
+    name: '土卫二（恩克拉多斯）',
+    colorHex: '#d8e0e8',
+    type: '卫星 · 土星卫星',
+    realDiameter: '504公里',
+    realDistance: '237,948公里 (与土星)',
+    orbitPeriod: '1.37天',
+    rotationPeriod: '1.37天 (潮汐锁定)',
+    temperature: '-200°C',
+    moons: '0',
+    atmosphere: '水蒸气, 二氧化氮',
+    fact: '南极地区喷射出冰羽流，地下海洋可能孕育生命。表面覆盖着几乎纯净的冰，反射率极高。'
+  }
 };

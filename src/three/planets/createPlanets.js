@@ -66,12 +66,28 @@ export function createPlanets(solarSystem, manager) {
       }
     }
 
-    if (planet.hasMoon) {
-      const { moon, moonOrbit } = createMoon(planet.radius, manager);
+    // Multi-moon system: iterate moonsList (Jupiter/Saturn) or legacy single Moon
+    planetObj.moons = [];
+    if (planet.moonsList && planet.moonsList.length > 0) {
+      planet.moonsList.forEach((moonCfg, idx) => {
+        const { moon, moonOrbit, moonConfig } = createMoon(planet.radius, manager, moonCfg);
+        moon.castShadow = true;
+        moon.receiveShadow = true;
+        // Stagger initial moon positions around orbit
+        moon.position.x = moonConfig.orbitDistance * Math.cos(idx * Math.PI * 0.5);
+        moon.position.z = moonConfig.orbitDistance * Math.sin(idx * Math.PI * 0.5);
+        mesh.add(moon);
+        mesh.add(moonOrbit);
+        planetObj.moons.push({ mesh: moon, moonOrbit, config: moonConfig });
+      });
+    } else if (planet.hasMoon) {
+      const { moon, moonOrbit, moonConfig } = createMoon(planet.radius, manager);
       moon.castShadow = true;
       moon.receiveShadow = true;
       mesh.add(moon);
       mesh.add(moonOrbit);
+      planetObj.moons.push({ mesh: moon, moonOrbit, config: moonConfig });
+      // Backward compat: keep planetObj.moon for Earth
       planetObj.moon = moon;
     }
 
