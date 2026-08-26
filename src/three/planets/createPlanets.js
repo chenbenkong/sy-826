@@ -13,9 +13,9 @@ export function createPlanets(solarSystem, manager) {
     let material;
 
     if (planet.name === '木星') {
-      material = createGasGiantMaterial(manager, 'textures/jupiter.jpg', 0x3a2a1a, 0.18);
+      material = createGasGiantMaterial(manager, 'textures/jupiter.jpg', 0x3a2a1a, 0.10);
     } else if (planet.name === '土星') {
-      material = createGasGiantMaterial(manager, 'textures/saturn.jpg', 0x4a3a20, 0.18);
+      material = createGasGiantMaterial(manager, 'textures/saturn.jpg', 0x4a3a20, 0.10);
     } else if (planet.name === '地球') {
       material = createEarthMaterial(manager);
     } else if (planet.name === '火星') {
@@ -482,8 +482,8 @@ function createSaturnRingSystem() {
 
         vec3 sunDir = normalize(sunDirection);
         float sunDot = dot(vWorldNormal, sunDir);
-        float backscatter = pow(max(-sunDot, 0.0), 3.0) * 0.6;
-        float forwardscatter = pow(max(sunDot, 0.0), 2.0) * 0.3;
+        float backscatter = pow(max(-sunDot, 0.0), 3.0) * 0.2;
+        float forwardscatter = pow(max(sunDot, 0.0), 2.0) * 0.1;
         float scatter = backscatter + forwardscatter;
 
         vec3 toRing = vWorldPos;
@@ -499,7 +499,7 @@ function createSaturnRingSystem() {
 
         float edgeFade = smoothstep(0.0, 0.05, vUv.x) * smoothstep(1.0, 0.95, vUv.x);
 
-        vec3 ringColor = texColor.rgb * (1.0 + scatter) * shadow;
+        vec3 ringColor = texColor.rgb * (0.9 + scatter * 0.5) * shadow;
         float alpha = ringAlpha * edgeFade * (0.7 + scatter * 0.3);
 
         gl_FragColor = vec4(ringColor, alpha);

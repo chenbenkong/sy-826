@@ -49,6 +49,8 @@ export class SolarSystemScene {
     this.bloomEnabled = true;
     this.godRaysEnabled = true;
     this.chromaticEnabled = true;
+    this.lensFlareEnabled = true;
+    this.lensFlareLevel = 1;
     this.asteroidBelt = null;
     this.loadingManager = null;
     this.onLoaded = null;
@@ -197,8 +199,8 @@ export class SolarSystemScene {
     const hemiLight = new THREE.HemisphereLight(0x9ab0d8, 0x241c14, 0.85);
     this.scene.add(hemiLight);
 
-    // 太阳点光源：无距离衰减，保证内外行星都被均匀照亮
-    this.sunLight = new THREE.PointLight(0xfff2e0, 4.2, 0, 0);
+    // 太阳点光源：decay=0 无距离衰减，靠低强度控制整体亮度
+    this.sunLight = new THREE.PointLight(0xfff2e0, 3.0, 0, 0);
     this.sunLight.position.set(0, 0, 0);
     this.sunLight.castShadow = true;
     this.sunLight.shadow.mapSize.width = 2048;
@@ -536,6 +538,11 @@ export class SolarSystemScene {
     }
   }
 
+  setLensFlare(enabled, level) {
+    this.lensFlareEnabled = enabled;
+    this.lensFlareLevel = level || 1;
+  }
+
   // 每帧更新后期处理 uniforms（太阳屏幕坐标、时间等）
   updatePostProcessing(time) {
     if (!this.composer || this.composerBroken) return;
@@ -569,7 +576,10 @@ export class SolarSystemScene {
         (sunNDC.x + 1) * 0.5,
         (sunNDC.y + 1) * 0.5
       );
-      this.lensFlarePass.uniforms.sunVisible.value = behind ? 0.0 : 1.0;
+      // 强度等级: 0=关, 1=低, 2=中, 3=高
+      const levels = [0, 0.4, 0.7, 1.0];
+      const intensity = (this.lensFlareEnabled && !behind) ? levels[this.lensFlareLevel] : 0;
+      this.lensFlarePass.uniforms.sunVisible.value = intensity;
       this.lensFlarePass.uniforms.time.value = time * 0.001;
     }
   }

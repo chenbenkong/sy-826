@@ -252,10 +252,10 @@ export const LensFlareShader = {
 
       float dy = vUv.y - sunScreenPos.y;
       float dx = vUv.x - sunScreenPos.x;
-      float streak = exp(-abs(dy) * 30.0) * exp(-abs(dx) * 2.0) * 0.35;
+      float streak = exp(-abs(dy) * 50.0) * exp(-abs(dx) * 3.0) * 0.08;
 
       float dist = sqrt(dx * dx + dy * dy);
-      float glow = exp(-dist * 10.0) * 0.4;
+      float glow = exp(-dist * 12.0) * 0.12;
 
       float ghost = 0.0;
       vec2 dir = vec2(0.5) - sunScreenPos;
@@ -267,15 +267,15 @@ export const LensFlareShader = {
           float off = 0.5 + fi * 0.4;
           vec2 gp = sunScreenPos + nDir * off;
           float gd = length(vUv - gp);
-          float spot = exp(-gd * 15.0);
+          float spot = exp(-gd * 20.0);
           float pulse = 0.6 + 0.4 * sin(time * 0.8 + fi * 1.5);
-          ghost += spot * pulse * 0.15;
+          ghost += spot * pulse * 0.04;
         }
       }
 
-      vec3 flare = vec3(0.55, 0.65, 1.0) * streak
+      vec3 flare = vec3(0.5, 0.6, 1.0) * streak
                  + vec3(1.0, 0.85, 0.6) * glow
-                 + vec3(0.7, 0.8, 1.0) * ghost;
+                 + vec3(0.6, 0.7, 1.0) * ghost;
       color.rgb += flare * sunVisible;
 
       gl_FragColor = color;

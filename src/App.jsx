@@ -50,6 +50,8 @@ export default function App() {
   const [bloom, setBloom] = useState(true);
   const [godRays, setGodRays] = useState(true);
   const [chromatic, setChromatic] = useState(true);
+  const [lensFlare, setLensFlare] = useState(true);
+  const [lensFlareLevel, setLensFlareLevel] = useState(1);
   const [globalScale, setGlobalScale] = useState(1.0);
   const [selectedCelestial, setSelectedCelestial] = useState(null);
   const [planetPositions, setPlanetPositions] = useState(null);
@@ -212,6 +214,23 @@ export default function App() {
     });
   }, []);
 
+  const handleToggleLensFlare = useCallback(() => {
+    setLensFlare(prev => {
+      const newValue = !prev;
+      if (sceneRef.current) {
+        sceneRef.current.setLensFlare(newValue, lensFlareLevel);
+      }
+      return newValue;
+    });
+  }, [lensFlareLevel]);
+
+  const handleLensFlareLevel = useCallback((level) => {
+    setLensFlareLevel(level);
+    if (sceneRef.current) {
+      sceneRef.current.setLensFlare(lensFlare, level);
+    }
+  }, [lensFlare]);
+
   const handleResetView = useCallback(() => {
     if (sceneRef.current) {
       sceneRef.current.resetView();
@@ -317,6 +336,8 @@ export default function App() {
         showBloom={bloom}
         showGodRays={godRays}
         showChromatic={chromatic}
+        showLensFlare={lensFlare}
+        lensFlareLevel={lensFlareLevel}
         globalScale={globalScale}
         isMusicPlaying={isMusicPlaying}
         onTogglePause={handleTogglePause}
@@ -328,6 +349,8 @@ export default function App() {
         onToggleBloom={handleToggleBloom}
         onToggleGodRays={handleToggleGodRays}
         onToggleChromatic={handleToggleChromatic}
+        onToggleLensFlare={handleToggleLensFlare}
+        onLensFlareLevel={handleLensFlareLevel}
         onResetView={handleResetView}
         onToggleMusic={handleToggleMusic}
         onBlackHole={handleEnterBlackHole}
