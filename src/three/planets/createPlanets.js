@@ -242,67 +242,6 @@ function createEarthAtmosphere(radius) {
   return mesh;
 }
 
-// 地球大气散射：Rayleigh 散射 + Beer-Lambert 消光 + 晨昏线红化
-function createEarthAtmosphere(radius) {
-  const geometry = new THREE.SphereGeometry(radius * 1.06, 64, 64);
-  const material = new THREE.ShaderMaterial({
-    uniforms: {
-      sunDirection: { value: new THREE.Vector3(1, 0, 0) }
-    },
-    vertexShader: /* glsl */`
-      varying vec3 vWorldPos;
-      varying vec3 vNormal;
-      varying vec3 vViewDir;
-      void main() {
-        vec4 wp = modelMatrix * vec4(position, 1.0);
-        vWorldPos = wp.xyz;
-        vNormal = normalize(normalMatrix * normal);
-        vViewDir = normalize(cameraPosition - wp.xyz);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: /* glsl */`
-      uniform vec3 sunDirection;
-      varying vec3 vWorldPos;
-      varying vec3 vNormal;
-      varying vec3 vViewDir;
-
-      void main() {
-        vec3 normal = normalize(vNormal);
-        vec3 viewDir = normalize(vViewDir);
-        vec3 sunDir = normalize(sunDirection);
-
-        float sunDot = dot(normal, sunDir);
-        float scatter = max(sunDot, 0.0);
-        vec3 rayleigh = vec3(0.15, 0.35, 0.9) * pow(scatter, 0.8);
-
-        float terminator = smoothstep(-0.15, 0.25, sunDot);
-        vec3 sunset = vec3(1.0, 0.35, 0.08) * pow(1.0 - terminator, 2.5) * 0.7;
-
-        float extinction = exp(-max(-sunDot, 0.0) * 3.0);
-
-        float fresnel = 1.0 - max(dot(viewDir, normal), 0.0);
-        float limb = pow(fresnel, 2.5) * 0.5;
-
-        vec3 scatterLight = (rayleigh + sunset) * extinction;
-        vec3 limbColor = mix(vec3(0.3, 0.5, 1.0), vec3(1.0, 0.5, 0.2), 1.0 - terminator);
-        vec3 finalColor = scatterLight + limbColor * limb;
-
-        float alpha = clamp(scatter * 0.7 + sunset * 0.5 + limb * 0.35, 0.0, 0.85);
-
-        gl_FragColor = vec4(finalColor, alpha);
-      }
-    `,
-    side: THREE.BackSide,
-    blending: THREE.AdditiveBlending,
-    transparent: true,
-    depthWrite: false
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.userData.material = material;
-  return mesh;
-}
-
 // 轨道线：随视深渐隐，增强空间纵深感
 function createOrbitLine(distance) {
   const geo = new THREE.RingGeometry(distance - 0.3, distance + 0.3, 256);
