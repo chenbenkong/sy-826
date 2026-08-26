@@ -108,6 +108,7 @@ export class SolarSystemScene {
       if (this.currentTargetPlanet && !isZooming) {
         this.currentTargetPlanet = null;
         this._trackingOffset = null;
+        this.controls.enabled = true;
       }
     });
     
@@ -553,19 +554,20 @@ export class SolarSystemScene {
     const worldPosition = new THREE.Vector3();
     this.currentTargetPlanet.mesh.getWorldPosition(worldPosition);
 
-    // 直接跟随：相机始终锁定目标当前位置，不再用 lerp 插值
+    // 追踪时禁用 OrbitControls，避免其 update() 覆盖相机位置
+    this.controls.enabled = false;
+
+    // 直接锁定目标当前位置
     this.controls.target.copy(worldPosition);
 
     // 保持相机与目标之间的相对偏移量
     if (!this._trackingOffset) {
-      // 首次进入追踪时，记录相机与目标的偏移
       this._trackingOffset = new THREE.Vector3().subVectors(this.camera.position, worldPosition);
     }
 
     const targetCamPos = new THREE.Vector3().addVectors(worldPosition, this._trackingOffset);
     this.camera.position.copy(targetCamPos);
-
-    this.controls.update();
+    this.camera.lookAt(worldPosition);
   }
 
   setPaused(paused) {
@@ -842,6 +844,7 @@ export class SolarSystemScene {
   resetView() {
     this.camera.position.set(0, 600, 1800);
     this.controls.target.set(0, 0, 0);
+    this.controls.enabled = true;
     this.controls.update();
     this.currentTargetPlanet = null;
     this._trackingOffset = null;
@@ -850,6 +853,7 @@ export class SolarSystemScene {
   cancelTracking() {
     this.currentTargetPlanet = null;
     this._trackingOffset = null;
+    this.controls.enabled = true;
   }
 
   getPlanetScreenPositions() {
