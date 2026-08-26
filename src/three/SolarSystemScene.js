@@ -104,11 +104,8 @@ export class SolarSystemScene {
     }, { passive: true });
     
     this.controls.addEventListener('start', () => {
-      // 只有在非缩放操作时取消追踪
       if (this.currentTargetPlanet && !isZooming) {
         this.currentTargetPlanet = null;
-        this._trackingOffset = null;
-        this.controls.enabled = true;
       }
     });
     
@@ -549,25 +546,19 @@ export class SolarSystemScene {
   }
 
   updateCameraTracking() {
-    if (!this.currentTargetPlanet || !this.currentTargetPlanet.mesh) return;
-
     const worldPosition = new THREE.Vector3();
     this.currentTargetPlanet.mesh.getWorldPosition(worldPosition);
-
-    // 追踪时禁用 OrbitControls，避免其 update() 覆盖相机位置
-    this.controls.enabled = false;
-
-    // 直接锁定目标当前位置
-    this.controls.target.copy(worldPosition);
-
-    // 保持相机与目标之间的相对偏移量
-    if (!this._trackingOffset) {
-      this._trackingOffset = new THREE.Vector3().subVectors(this.camera.position, worldPosition);
-    }
-
-    const targetCamPos = new THREE.Vector3().addVectors(worldPosition, this._trackingOffset);
-    this.camera.position.copy(targetCamPos);
-    this.camera.lookAt(worldPosition);
+    
+    const adaptiveSpeed = Math.min(0.08 * Math.max(this.timeSpeed, 1), 0.3);
+    
+    const offset = new THREE.Vector3().subVectors(this.camera.position, this.controls.target);
+    
+    this.controls.target.lerp(worldPosition, adaptiveSpeed);
+    
+    const newCameraPosition = new THREE.Vector3().addVectors(worldPosition, offset);
+    this.camera.position.lerp(newCameraPosition, adaptiveSpeed);
+    
+    this.controls.update();
   }
 
   setPaused(paused) {
@@ -844,16 +835,12 @@ export class SolarSystemScene {
   resetView() {
     this.camera.position.set(0, 600, 1800);
     this.controls.target.set(0, 0, 0);
-    this.controls.enabled = true;
     this.controls.update();
     this.currentTargetPlanet = null;
-    this._trackingOffset = null;
   }
 
   cancelTracking() {
     this.currentTargetPlanet = null;
-    this._trackingOffset = null;
-    this.controls.enabled = true;
   }
 
   getPlanetScreenPositions() {
