@@ -432,7 +432,7 @@ function createSimplePlanetMaterial(manager, path, emissive, intensity, withNorm
 
 function createRings(planet, manager) {
   if (planet.name === '土星') {
-    return createSaturnRingSystem();
+    return createSaturnRingSystem(planet.radius);
   }
 
   const innerRadius = planet.radius * 1.4;
@@ -457,8 +457,8 @@ function createRings(planet, manager) {
 }
 
 // 土星环：自定义着色器 — 背光散射 + 行星阴影 + 透明度层次
-function createSaturnRingSystem() {
-  const radius = 25;
+function createSaturnRingSystem(planetRadius) {
+  const radius = planetRadius;
   const inner = radius * 1.20;
   const outer = radius * 3.40;
   const geo = new THREE.RingGeometry(inner, outer, 256);
