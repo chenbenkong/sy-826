@@ -52,6 +52,7 @@ export function createPlanets(solarSystem, manager) {
       mesh,
       orbit,
       material,
+      moonCount: planet.moons,
       ...planet
     };
 

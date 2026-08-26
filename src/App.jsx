@@ -91,7 +91,7 @@ export default function App() {
         orbitPeriod: planet.orbitPeriod,
         rotationPeriod: planet.rotationPeriod,
         temperature: planet.temperature,
-        moons: planet.moons,
+        moons: planet.moonCount,
         atmosphere: typeof planet.atmosphere === 'string' ? planet.atmosphere : undefined
       });
     };
