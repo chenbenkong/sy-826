@@ -53,6 +53,7 @@ export default function App() {
   const [lensFlare, setLensFlare] = useState(true);
   const [cinemaMode, setCinemaMode] = useState(false);
   const [globalScale, setGlobalScale] = useState(1.0);
+  const [realZoom, setRealZoom] = useState(1.0);
   const [selectedCelestial, setSelectedCelestial] = useState(null);
   const [planetPositions, setPlanetPositions] = useState(null);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
@@ -137,6 +138,7 @@ export default function App() {
       if (sceneRef.current) {
         const positions = sceneRef.current.getPlanetScreenPositions();
         setPlanetPositions(positions);
+        setRealZoom(sceneRef.current.getZoomRatio());
       }
     }, 100);
 
@@ -334,8 +336,8 @@ export default function App() {
 
       {!cinemaMode && (
         <>
-          <Header zoomLevel={globalScale} speedLevel={timeSpeed} isPaused={isPaused} />
-          <StatusDisplay zoomLevel={globalScale} speedLevel={timeSpeed} />
+          <Header zoomLevel={realZoom} speedLevel={timeSpeed} isPaused={isPaused} />
+          <StatusDisplay zoomLevel={realZoom} speedLevel={timeSpeed} />
           <PlanetLabels positions={planetPositions} />
           <NavigationPanel onSelect={(name) => sceneRef.current?.focusByName(name)} />
           <PlanetInfo
