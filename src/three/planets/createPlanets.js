@@ -47,13 +47,7 @@ export function createPlanets(solarSystem, manager) {
 
     // 大气辉光：Fresnel 边缘光
     if (planet.atmoColor) {
-      if (planet.name === '地球') {
-        const atmo = createEarthAtmosphere(planet.radius);
-        mesh.add(atmo);
-        planetObj.atmosphere = atmo;
-      } else {
-        mesh.add(createAtmosphere(planet.radius, planet.atmoColor));
-      }
+      mesh.add(createAtmosphere(planet.radius, planet.atmoColor));
     }
 
     const orbit = createOrbitLine(planet.distance);

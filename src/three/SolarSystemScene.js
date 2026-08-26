@@ -368,16 +368,8 @@ export class SolarSystemScene {
       this.updateSun();
     }
     
-    if (this.starField && this.starField.children) {
-      // 三层星场：各自旋转速度不同，产生视差
-      this.starField.children.forEach(layer => {
-        if (layer.userData.material) {
-          layer.userData.material.uniforms.time.value = time;
-        }
-        if (layer.userData.rotSpeed) {
-          layer.rotation.y += layer.userData.rotSpeed * this.timeSpeed;
-        }
-      });
+    if (this.starField && this.starField.userData.material) {
+      this.starField.userData.material.uniforms.time.value = time;
     }
     
     if (this.currentTargetPlanet) {
@@ -439,18 +431,11 @@ export class SolarSystemScene {
         if (planet.clouds) {
           planet.clouds.rotation.y += 0.00012 * this.timeSpeed;
         }
-        // 更新地球日夜着色器的太阳方向
         if (planet.material && planet.material.uniforms && planet.material.uniforms.sunDirection) {
           const earthWorld = new THREE.Vector3();
           planet.mesh.getWorldPosition(earthWorld);
+          // 太阳位于世界原点
           planet.material.uniforms.sunDirection.value
-            .copy(earthWorld).multiplyScalar(-1).normalize();
-        }
-        // 更新地球大气散射的太阳方向
-        if (planet.atmosphere && planet.atmosphere.userData.material) {
-          const earthWorld = new THREE.Vector3();
-          planet.mesh.getWorldPosition(earthWorld);
-          planet.atmosphere.userData.material.uniforms.sunDirection.value
             .copy(earthWorld).multiplyScalar(-1).normalize();
         }
       }
