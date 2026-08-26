@@ -7,10 +7,7 @@ export function ControlPanel({
   showStars,
   showNames,
   showBloom,
-  showGodRays,
-  showChromatic,
   showLensFlare,
-  lensFlareLevel,
   globalScale,
   isMusicPlaying,
   onTogglePause,
@@ -20,10 +17,7 @@ export function ControlPanel({
   onToggleStars,
   onToggleNames,
   onToggleBloom,
-  onToggleGodRays,
-  onToggleChromatic,
   onToggleLensFlare,
-  onLensFlareLevel,
   onResetView,
   onToggleMusic,
   onBlackHole
@@ -80,12 +74,6 @@ export function ControlPanel({
         <button className={showBloom ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleBloom}>
           辉光
         </button>
-        <button className={showGodRays ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleGodRays}>
-          光柱
-        </button>
-        <button className={showChromatic ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleChromatic}>
-          色差
-        </button>
         <button className={showLensFlare ? 'toggle-btn active' : 'toggle-btn'} onClick={onToggleLensFlare}>
           光晕
         </button>
@@ -93,23 +81,6 @@ export function ControlPanel({
           {isMusicPlaying ? '♪ 静音' : '♪ 音乐'}
         </button>
       </div>
-
-      {showLensFlare && (
-        <div className="control-group">
-          <div className="slider-row">
-            <label>光晕强度</label>
-            <input
-              type="range"
-              min="0"
-              max="3"
-              step="1"
-              value={lensFlareLevel}
-              onChange={(e) => onLensFlareLevel(parseInt(e.target.value))}
-            />
-            <span className="slider-value">{['关', '低', '中', '高'][lensFlareLevel]}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

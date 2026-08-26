@@ -28,7 +28,7 @@ export function createComposer(renderer, scene, camera) {
   // 2. Bloom 辉光 — 太阳与高亮区域柔和发光
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(size.x, size.y),
-    0.45,  // strength
+    0.22,  // strength
     0.5,   // radius
     0.82   // threshold
   );

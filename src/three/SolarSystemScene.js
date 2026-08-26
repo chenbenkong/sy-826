@@ -538,9 +538,8 @@ export class SolarSystemScene {
     }
   }
 
-  setLensFlare(enabled, level) {
+  setLensFlare(enabled) {
     this.lensFlareEnabled = enabled;
-    this.lensFlareLevel = level || 1;
   }
 
   // 每帧更新后期处理 uniforms（太阳屏幕坐标、时间等）
@@ -576,10 +575,7 @@ export class SolarSystemScene {
         (sunNDC.x + 1) * 0.5,
         (sunNDC.y + 1) * 0.5
       );
-      // 强度等级: 0=关, 1=低, 2=中, 3=高
-      const levels = [0, 0.4, 0.7, 1.0];
-      const intensity = (this.lensFlareEnabled && !behind) ? levels[this.lensFlareLevel] : 0;
-      this.lensFlarePass.uniforms.sunVisible.value = intensity;
+      this.lensFlarePass.uniforms.sunVisible.value = (this.lensFlareEnabled && !behind) ? 1.0 : 0.0;
       this.lensFlarePass.uniforms.time.value = time * 0.001;
     }
   }

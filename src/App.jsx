@@ -51,7 +51,6 @@ export default function App() {
   const [godRays, setGodRays] = useState(true);
   const [chromatic, setChromatic] = useState(true);
   const [lensFlare, setLensFlare] = useState(true);
-  const [lensFlareLevel, setLensFlareLevel] = useState(1);
   const [globalScale, setGlobalScale] = useState(1.0);
   const [selectedCelestial, setSelectedCelestial] = useState(null);
   const [planetPositions, setPlanetPositions] = useState(null);
@@ -92,7 +91,7 @@ export default function App() {
         rotationPeriod: planet.rotationPeriod,
         temperature: planet.temperature,
         moons: planet.moons,
-        atmosphere: planet.atmosphere
+        atmosphere: typeof planet.atmosphere === 'string' ? planet.atmosphere : undefined
       });
     };
 
@@ -218,18 +217,11 @@ export default function App() {
     setLensFlare(prev => {
       const newValue = !prev;
       if (sceneRef.current) {
-        sceneRef.current.setLensFlare(newValue, lensFlareLevel);
+        sceneRef.current.setLensFlare(newValue);
       }
       return newValue;
     });
-  }, [lensFlareLevel]);
-
-  const handleLensFlareLevel = useCallback((level) => {
-    setLensFlareLevel(level);
-    if (sceneRef.current) {
-      sceneRef.current.setLensFlare(lensFlare, level);
-    }
-  }, [lensFlare]);
+  }, []);
 
   const handleResetView = useCallback(() => {
     if (sceneRef.current) {
@@ -337,7 +329,6 @@ export default function App() {
         showGodRays={godRays}
         showChromatic={chromatic}
         showLensFlare={lensFlare}
-        lensFlareLevel={lensFlareLevel}
         globalScale={globalScale}
         isMusicPlaying={isMusicPlaying}
         onTogglePause={handleTogglePause}
@@ -347,10 +338,7 @@ export default function App() {
         onToggleStars={handleToggleStars}
         onToggleNames={handleToggleNames}
         onToggleBloom={handleToggleBloom}
-        onToggleGodRays={handleToggleGodRays}
-        onToggleChromatic={handleToggleChromatic}
         onToggleLensFlare={handleToggleLensFlare}
-        onLensFlareLevel={handleLensFlareLevel}
         onResetView={handleResetView}
         onToggleMusic={handleToggleMusic}
         onBlackHole={handleEnterBlackHole}
