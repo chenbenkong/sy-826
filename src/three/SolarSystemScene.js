@@ -414,6 +414,12 @@ export class SolarSystemScene {
     this.planetMeshes.forEach(planet => {
       if (planet.name === '土星') {
         planet.mesh.rotation.y += 0.0008 * this.timeSpeed;
+        if (planet.ring && planet.ring.userData.ringMaterial) {
+          const saturnWorld = new THREE.Vector3();
+          planet.mesh.getWorldPosition(saturnWorld);
+          planet.ring.userData.ringMaterial.uniforms.sunDirection.value
+            .copy(saturnWorld).multiplyScalar(-1).normalize();
+        }
       } else if (planet.name === '火星') {
         planet.mesh.rotation.y += 0.0002 * this.timeSpeed;
       } else if (planet.name === '金星') {

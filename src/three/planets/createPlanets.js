@@ -449,12 +449,77 @@ function createSaturnRingSystem() {
   remapRingUV(geo, inner, outer);
 
   const tex = createRingColorTexture();
-  const mat = new THREE.MeshStandardMaterial({
-    map: tex,
+
+  // 自定义环着色器：背光散射 + 透明度 + 行星阴影
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: tex },
+      sunDirection: { value: new THREE.Vector3(1, 0, 0) },
+      ringInner: { value: inner },
+      ringOuter: { value: outer },
+      planetRadius: { value: radius }
+    },
+    vertexShader: /* glsl */`
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNormal;
+      void main() {
+        vUv = uv;
+        vWorldNormal = normalize(mat3(modelMatrix) * normal);
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWorldPos = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }
+    `,
+    fragmentShader: /* glsl */`
+      uniform sampler2D map;
+      uniform vec3 sunDirection;
+      uniform float ringInner;
+      uniform float ringOuter;
+      uniform float planetRadius;
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNormal;
+
+      void main() {
+        vec4 texColor = texture2D(map, vUv);
+        float ringAlpha = texColor.a;
+
+        // 背光散射：太阳在环背后时，环变亮（前向散射）
+        vec3 sunDir = normalize(sunDirection);
+        float sunDot = dot(vWorldNormal, sunDir);
+        float backscatter = pow(max(-sunDot, 0.0), 3.0) * 0.6;
+        float forwardscatter = pow(max(sunDot, 0.0), 2.0) * 0.3;
+        float scatter = backscatter + forwardscatter;
+
+        // 行星阴影：环上点到太阳的连线被行星遮挡
+        vec3 toSun = sunDir * 1000.0;
+        vec3 ringCenter = vec3(0.0, 0.0, 0.0);
+        vec3 toRing = vWorldPos - ringCenter;
+        float shadow = 1.0;
+        // 简化阴影：环上点在行星背阳面时变暗
+        float ringDist = length(toRing.xz);
+        float ringY = abs(vWorldPos.y);
+        if (ringDist < planetRadius * 1.5) {
+          // 检查是否在行星阴影锥内
+          float projOnSunAxis = dot(toRing, sunDir);
+          float perpDist = length(toRing - sunDir * projOnSunAxis);
+          if (projOnSunAxis < 0.0 && perpDist < planetRadius) {
+            shadow = mix(0.15, 1.0, smoothstep(planetRadius * 0.3, planetRadius, perpDist));
+          }
+        }
+
+        // 环边缘渐隐
+        float edgeFade = smoothstep(0.0, 0.05, vUv.x) * smoothstep(1.0, 0.95, vUv.x);
+
+        vec3 ringColor = texColor.rgb * (1.0 + scatter) * shadow;
+        float alpha = ringAlpha * edgeFade * (0.7 + scatter * 0.3);
+
+        gl_FragColor = vec4(ringColor, alpha);
+      }
+    `,
     side: THREE.DoubleSide,
     transparent: true,
-    roughness: 1.0,
-    metalness: 0.0,
     depthWrite: false
   });
 
@@ -464,6 +529,7 @@ function createSaturnRingSystem() {
 
   const group = new THREE.Group();
   group.add(ring);
+  group.userData.ringMaterial = mat;
   return group;
 }
 
