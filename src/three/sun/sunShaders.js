@@ -9,12 +9,49 @@ export function createSunSurfaceShader(mapTexture) {
       brightness: { value: 1.0 }
     },
     vertexShader: /* glsl */`
+      uniform float time;
       varying vec2 vUv;
       varying vec3 vNormal;
+      varying float vDisplace;
+
+      float hash(vec2 p) {
+        p = fract(p * vec2(123.34, 456.21));
+        p += dot(p, p + 45.32);
+        return fract(p.x * p.y);
+      }
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        float a = hash(i);
+        float b = hash(i + vec2(1.0, 0.0));
+        float c = hash(i + vec2(0.0, 1.0));
+        float d = hash(i + vec2(1.0, 1.0));
+        vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+      }
+      float fbm(vec2 p) {
+        float v = 0.0;
+        float amp = 0.5;
+        for (int i = 0; i < 4; i++) {
+          v += amp * noise(p);
+          p *= 2.0;
+          amp *= 0.5;
+        }
+        return v;
+      }
+
       void main() {
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+        // 动态表面变形：多层 fbm 驱动顶点位移（模拟等离子翻滚）
+        float n1 = fbm(uv * 5.0 + time * 0.04);
+        float n2 = fbm(uv * 8.0 - time * 0.03 + 3.14);
+        float displacement = (n1 * 0.6 + n2 * 0.4) * 0.8;
+        vDisplace = displacement;
+
+        vec3 newPosition = position + normal * displacement;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
       }
     `,
     fragmentShader: /* glsl */`
@@ -81,9 +118,20 @@ export function createSunSurfaceShader(mapTexture) {
          float limb = mix(0.5, 1.0, pow(ndv, 0.55));
          col *= limb;
 
-         // 整体轻微闪动
-         float flicker = 0.96 + 0.04 * sin(time * 2.0 + n * 10.0);
-         col *= brightness * flicker;
+          // 整体轻微闪动
+          float flicker = 0.96 + 0.04 * sin(time * 2.0 + n * 10.0);
+
+          // 耀斑亮斑：随机位置的高亮脉动区域（模拟太阳耀斑活动区）
+          float flare1 = fbm(vUv * 3.0 + vec2(time * 0.02, time * 0.015));
+          float flare2 = fbm(vUv * 2.5 + vec2(-time * 0.018, time * 0.012) + 5.0);
+          float flareMask1 = smoothstep(0.62, 0.72, flare1);
+          float flareMask2 = smoothstep(0.65, 0.75, flare2);
+          float flarePulse1 = 0.7 + 0.3 * sin(time * 1.5 + flare1 * 6.0);
+          float flarePulse2 = 0.6 + 0.4 * sin(time * 1.2 + flare2 * 5.0 + 2.0);
+          col += vec3(0.25, 0.12, 0.0) * flareMask1 * flarePulse1;
+          col += vec3(0.18, 0.08, 0.0) * flareMask2 * flarePulse2;
+
+          col *= brightness * flicker;
 
          gl_FragColor = vec4(col, 1.0);
        }

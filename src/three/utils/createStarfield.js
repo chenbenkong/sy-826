@@ -1,24 +1,42 @@
 import * as THREE from 'three';
 
-// 程序化星空：随机散布的恒星 + 沿"银河带"加密的彩色星簇
+// 程序化星空：三层不同距离的星场，产生视差深度感
+// 近层旋转快、远层旋转慢，相机移动时产生立体深度
 export function createStarfield() {
-  const starCount = 30000;
-  const positions = new Float32Array(starCount * 3);
-  const colors = new Float32Array(starCount * 3);
-  const sizes = new Float32Array(starCount);
+  const group = new THREE.Group();
+
+  // 三层星场：近(快) / 中(默认) / 远(慢)
+  const layers = [
+    { count: 8000,  radiusMin: 2000, radiusMax: 3500, speed: 0.00008, sizeScale: 1.3 },
+    { count: 15000, radiusMin: 4000, radiusMax: 6500, speed: 0.00003, sizeScale: 1.0 },
+    { count: 10000, radiusMin: 7000, radiusMax: 10000, speed: 0.00001, sizeScale: 0.7 }
+  ];
+
+  layers.forEach(layer => {
+    const stars = createStarLayer(layer.count, layer.radiusMin, layer.radiusMax, layer.sizeScale);
+    stars.userData.rotSpeed = layer.speed;
+    group.add(stars);
+  });
+
+  group.userData.layers = layers;
+  return group;
+}
+
+function createStarLayer(count, radiusMin, radiusMax, sizeScale) {
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
 
   const color = new THREE.Color();
 
-  for (let i = 0; i < starCount; i++) {
+  for (let i = 0; i < count; i++) {
     const i3 = i * 3;
+    const radius = radiusMin + Math.random() * (radiusMax - radiusMin);
 
-    const radius = 4000 + Math.random() * 3500;
-
-    // 约 35% 的恒星集中在赤道附近的"银河带"，模拟银河
+    // 约 35% 的恒星集中在赤道附近的"银河带"
     let theta, phi;
     if (Math.random() < 0.35) {
       theta = Math.random() * Math.PI * 2;
-      // 高斯式集中在赤道平面
       const band = (Math.random() + Math.random() + Math.random() - 1.5) * 0.35;
       phi = Math.acos(THREE.MathUtils.clamp(band, -1, 1));
     } else {
@@ -30,7 +48,7 @@ export function createStarfield() {
     positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i3 + 2] = radius * Math.cos(phi);
 
-    // 恒星颜色：以白为主，混入暖黄、冷蓝与少量红巨星
+    // 恒星颜色：白为主，混入暖黄、冷蓝、红巨星
     const starType = Math.random();
     if (starType < 0.12) {
       color.setRGB(1.0, 0.82, 0.55);       // 暖黄
@@ -47,7 +65,7 @@ export function createStarfield() {
     colors[i3 + 1] = color.g;
     colors[i3 + 2] = color.b;
 
-    sizes[i] = 0.6 + Math.random() * 3.0;
+    sizes[i] = (0.6 + Math.random() * 3.0) * sizeScale;
   }
 
   const starGeometry = new THREE.BufferGeometry();
@@ -68,7 +86,6 @@ export function createStarfield() {
       void main() {
         vColor = color;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        // 每颗星独立的微弱闪烁
         float twinkle = 0.75 + 0.25 * sin(time * 1.5 + position.x * 0.01 + position.y * 0.013);
         gl_PointSize = size * twinkle * (320.0 / -mvPosition.z);
         gl_Position = projectionMatrix * mvPosition;
@@ -80,7 +97,6 @@ export function createStarfield() {
       void main() {
         float dist = length(gl_PointCoord - vec2(0.5));
         if (dist > 0.5) discard;
-        // 高斯核心 + 柔和光晕，比硬圆点更接近真实星象
         float d2 = dist * dist * 4.0;
         float core = exp(-d2 * 9.0);
         float halo = exp(-d2 * 2.2) * 0.28;
@@ -96,6 +112,5 @@ export function createStarfield() {
 
   const stars = new THREE.Points(starGeometry, starMaterial);
   stars.userData.material = starMaterial;
-
   return stars;
 }
