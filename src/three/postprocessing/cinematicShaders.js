@@ -217,3 +217,68 @@ export const VignetteGrainShader = {
     }
   `
 };
+
+// ═══════════════════════════════════════════════════════════════
+// 5. LENS FLARE — 镜头光晕（水平光束 + 柔光球 + ghost 光斑）
+// ═══════════════════════════════════════════════════════════════
+
+export const LensFlareShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    sunScreenPos: { value: new THREE.Vector2(0.5, 0.5) },
+    sunVisible: { value: 1.0 },
+    time: { value: 0.0 }
+  },
+  vertexShader: /* glsl */`
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse;
+    uniform vec2 sunScreenPos;
+    uniform float sunVisible;
+    uniform float time;
+    varying vec2 vUv;
+
+    void main() {
+      vec4 color = texture2D(tDiffuse, vUv);
+      if (sunVisible < 0.01) {
+        gl_FragColor = color;
+        return;
+      }
+
+      float dy = vUv.y - sunScreenPos.y;
+      float dx = vUv.x - sunScreenPos.x;
+      float streak = exp(-abs(dy) * 30.0) * exp(-abs(dx) * 2.0) * 0.35;
+
+      float dist = sqrt(dx * dx + dy * dy);
+      float glow = exp(-dist * 10.0) * 0.4;
+
+      float ghost = 0.0;
+      vec2 dir = vec2(0.5) - sunScreenPos;
+      float dirLen = length(dir);
+      if (dirLen > 0.001) {
+        vec2 nDir = dir / dirLen;
+        for (int i = 0; i < 4; i++) {
+          float fi = float(i);
+          float off = 0.5 + fi * 0.4;
+          vec2 gp = sunScreenPos + nDir * off;
+          float gd = length(vUv - gp);
+          float spot = exp(-gd * 15.0);
+          float pulse = 0.6 + 0.4 * sin(time * 0.8 + fi * 1.5);
+          ghost += spot * pulse * 0.15;
+        }
+      }
+
+      vec3 flare = vec3(0.55, 0.65, 1.0) * streak
+                 + vec3(1.0, 0.85, 0.6) * glow
+                 + vec3(0.7, 0.8, 1.0) * ghost;
+      color.rgb += flare * sunVisible;
+
+      gl_FragColor = color;
+    }
+  `
+};

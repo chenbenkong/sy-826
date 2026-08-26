@@ -440,7 +440,7 @@ function createRings(planet, manager) {
   return ring;
 }
 
-// 土星环：单一网格 + 程序化彩色环带贴图（含卡西尼缝等间隙），自包含无需下载
+// 土星环：自定义着色器 — 背光散射 + 行星阴影 + 透明度层次
 function createSaturnRingSystem() {
   const radius = 25;
   const inner = radius * 1.20;
@@ -449,12 +449,64 @@ function createSaturnRingSystem() {
   remapRingUV(geo, inner, outer);
 
   const tex = createRingColorTexture();
-  const mat = new THREE.MeshStandardMaterial({
-    map: tex,
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: tex },
+      sunDirection: { value: new THREE.Vector3(1, 0, 0) },
+      planetRadius: { value: radius }
+    },
+    vertexShader: /* glsl */`
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNormal;
+      void main() {
+        vUv = uv;
+        vWorldNormal = normalize(mat3(modelMatrix) * normal);
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWorldPos = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }
+    `,
+    fragmentShader: /* glsl */`
+      uniform sampler2D map;
+      uniform vec3 sunDirection;
+      uniform float planetRadius;
+      varying vec2 vUv;
+      varying vec3 vWorldPos;
+      varying vec3 vWorldNormal;
+
+      void main() {
+        vec4 texColor = texture2D(map, vUv);
+        float ringAlpha = texColor.a;
+
+        vec3 sunDir = normalize(sunDirection);
+        float sunDot = dot(vWorldNormal, sunDir);
+        float backscatter = pow(max(-sunDot, 0.0), 3.0) * 0.6;
+        float forwardscatter = pow(max(sunDot, 0.0), 2.0) * 0.3;
+        float scatter = backscatter + forwardscatter;
+
+        vec3 toRing = vWorldPos;
+        float shadow = 1.0;
+        float ringDist = length(toRing.xz);
+        if (ringDist < planetRadius * 1.5) {
+          float projOnSunAxis = dot(toRing, sunDir);
+          float perpDist = length(toRing - sunDir * projOnSunAxis);
+          if (projOnSunAxis < 0.0 && perpDist < planetRadius) {
+            shadow = mix(0.15, 1.0, smoothstep(planetRadius * 0.3, planetRadius, perpDist));
+          }
+        }
+
+        float edgeFade = smoothstep(0.0, 0.05, vUv.x) * smoothstep(1.0, 0.95, vUv.x);
+
+        vec3 ringColor = texColor.rgb * (1.0 + scatter) * shadow;
+        float alpha = ringAlpha * edgeFade * (0.7 + scatter * 0.3);
+
+        gl_FragColor = vec4(ringColor, alpha);
+      }
+    `,
     side: THREE.DoubleSide,
     transparent: true,
-    roughness: 1.0,
-    metalness: 0.0,
     depthWrite: false
   });
 
@@ -464,6 +516,7 @@ function createSaturnRingSystem() {
 
   const group = new THREE.Group();
   group.add(ring);
+  group.userData.ringMaterial = mat;
   return group;
 }
 

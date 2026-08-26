@@ -8,7 +8,8 @@ import {
   GodRaysShader,
   ChromaticAberrationShader,
   ColorGradingShader,
-  VignetteGrainShader
+  VignetteGrainShader,
+  LensFlareShader
 } from './cinematicShaders.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -49,7 +50,11 @@ export function createComposer(renderer, scene, camera) {
   const vignetteGrainPass = new ShaderPass(VignetteGrainShader);
   composer.addPass(vignetteGrainPass);
 
-  // 7. OutputPass — ACES 色调映射 + sRGB 转换
+  // 7. Lens Flare 镜头光晕 — 水平光束 + ghost 光斑
+  const lensFlarePass = new ShaderPass(LensFlareShader);
+  composer.addPass(lensFlarePass);
+
+  // 8. OutputPass — ACES 色调映射 + sRGB 转换
   composer.addPass(new OutputPass());
 
   return {
@@ -58,6 +63,7 @@ export function createComposer(renderer, scene, camera) {
     godRaysPass,
     chromaticPass,
     colorGradingPass,
-    vignetteGrainPass
+    vignetteGrainPass,
+    lensFlarePass
   };
 }
