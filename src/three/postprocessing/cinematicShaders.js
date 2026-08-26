@@ -85,9 +85,14 @@ export const ChromaticAberrationShader = {
       float dist = length(dir);
       float offset = amount * dist * dist; // 二次方衰减，中心几乎无偏移
 
-      vec2 dirNorm = normalize(dir);
-      vec2 rOffset = dirNorm * offset;
-      vec2 bOffset = -dirNorm * offset;
+      // 安全归一化：中心像素 dir=(0,0) 时跳过偏移，避免 NaN
+      vec2 rOffset = vec2(0.0);
+      vec2 bOffset = vec2(0.0);
+      if (dist > 0.0001) {
+        vec2 dirNorm = normalize(dir);
+        rOffset = dirNorm * offset;
+        bOffset = -dirNorm * offset;
+      }
 
       float r = texture2D(tDiffuse, vUv + rOffset).r;
       float g = texture2D(tDiffuse, vUv).g;
