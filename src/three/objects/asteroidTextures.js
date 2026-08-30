@@ -4,7 +4,7 @@ import * as THREE from 'three';
  * Procedural asteroid surface texture + normal map.
  * Generates a rocky, cratered surface on a canvas.
  */
-export function createAsteroidTextures(size = 256, seed = 0) {
+export function createAsteroidTextures(size = 1024, seed = 0) {
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;

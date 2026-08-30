@@ -92,7 +92,7 @@ export class SolarSystemScene {
     this.controls.enablePan = true;
     this.controls.enableRotate = true;
     this.controls.enableZoom = true;
-    this.controls.minDistance = 5;
+    this.controls.minDistance = 0.1;
     this.controls.maxDistance = 25000;
     
     // 监听鼠标/触摸事件来区分操作类型

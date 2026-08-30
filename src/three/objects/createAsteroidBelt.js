@@ -4,7 +4,7 @@ import * as THREE from 'three';
 export function createAsteroidBelt(innerRadius = 1000, outerRadius = 1400, count = 8000) {
   const group = new THREE.Group();
 
-  const { albedo, normal } = buildRockTextures(512);
+  const { albedo, normal } = buildRockTextures(1024);
 
   const geometry = new THREE.IcosahedronGeometry(1, 2);
   const material = new THREE.MeshStandardMaterial({
@@ -25,7 +25,7 @@ export function createAsteroidBelt(innerRadius = 1000, outerRadius = 1400, count
         tex.anisotropy = 8;
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
         material.map = tex;
-        material.normalMap = buildNormalFromImage(tex.image, 512);
+        material.normalMap = buildNormalFromImage(tex.image, 1024);
         material.needsUpdate = true;
       }
     },
@@ -194,7 +194,7 @@ function makeValueNoise(size) {
 export function createKuiperBelt(innerRadius = 6500, outerRadius = 7500, count = 3000) {
   const group = new THREE.Group();
 
-  const { albedo, normal } = buildKuiperTextures(512);
+  const { albedo, normal } = buildKuiperTextures(1024);
 
   const geometry = new THREE.IcosahedronGeometry(1, 2);
   const material = new THREE.MeshStandardMaterial({
